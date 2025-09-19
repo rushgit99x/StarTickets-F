@@ -149,10 +149,6 @@
                                            class="btn btn-sm btn-outline-info" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @* <a href="@Url.Action("Edit", new { id = evt.EventId })" 
-                                           class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a> *@
                                         <a href="@Url.Action("EditForm", new { id = evt.EventId })" 
                                            class="btn btn-sm btn-outline-primary" title="Edit">
                                             <i class="fas fa-edit"></i>
@@ -161,39 +157,6 @@
                                            class="btn btn-sm btn-outline-primary" title="Edit">
                                             <i class="fas fa-trash"></i>
                                         </a>
-                                        @* <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                    data-bs-toggle="dropdown">
-                                                <i class="fas fa-cog"></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <button class="dropdown-item update-status-btn" 
-                                                            data-event-id="@evt.EventId" data-status="1">
-                                                        <i class="fas fa-check text-success"></i> Publish
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button class="dropdown-item update-status-btn" 
-                                                            data-event-id="@evt.EventId" data-status="0">
-                                                        <i class="fas fa-file-alt text-warning"></i> Draft
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button class="dropdown-item update-status-btn" 
-                                                            data-event-id="@evt.EventId" data-status="2">
-                                                        <i class="fas fa-times text-danger"></i> Cancel
-                                                    </button>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-danger delete-event-btn" 
-                                                            data-event-id="@evt.EventId">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div> *@
                                     </div>
                                 </td>
                             </tr>

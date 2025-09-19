@@ -56,7 +56,6 @@ app.UseRouting();
 app.UseAuthentication();   // if you’re using Identity
 app.UseAuthorization();
 
-// ✅ Enable session middleware BEFORE endpoints
 app.UseSession();
 
 app.MapControllerRoute(

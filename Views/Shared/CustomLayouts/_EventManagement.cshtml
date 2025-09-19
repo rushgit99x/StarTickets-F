@@ -23,19 +23,6 @@
                         <span>Events</span>
                     </a>
                 </li>
-                @* <li class="menu-item">
-                    <a href="@Url.Action("Index", "EventApproval")" class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "EventApproval" ? "active" : "")">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Approvals</span>
-                        @{
-                            var pendingCount = ViewBag.PendingApprovalCount ?? 0;
-                        }
-                        @if (pendingCount > 0)
-                        {
-                            <span class="badge badge-danger">@pendingCount</span>
-                        }
-                    </a>
-                </li> *@
                 <li class="menu-item">
                     <a href="@Url.Action("Index", "VenueManagement")" class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "VenueManagement" ? "active" : "")">
                         <i class="fas fa-map-marker-alt"></i>
@@ -69,9 +56,6 @@
                     }
                 </div>
                 <div class="header-right">
-                    @* <span class="user-info">
-                        Welcome, @(ViewBag.UserName ?? "Admin")
-                    </span> *@
                 </div>
             </header>
 

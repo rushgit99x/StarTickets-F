@@ -15,10 +15,6 @@
         </div>
         
         <div class="page-actions">
-            @* <a href="@Url.Action("Details", new { id = Model.UserId })" class="btn btn-outline-info">
-                <i class="fas fa-eye"></i>
-                View Details
-            </a> *@
             <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i>
                 Back to Users
@@ -189,14 +185,6 @@
                                             <small class="d-block text-muted">User can login and access the system</small>
                                         </label>
                                     </div>
-                                    
-                                    @* <div class="form-check">
-                                        <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
-                                        <label asp-for="EmailConfirmed" class="form-check-label">
-                                            <strong>Email Confirmed</strong>
-                                            <small class="d-block text-muted">Email address has been verified</small>
-                                        </label>
-                                    </div> *@
                                 </div>
                             </div>
                         </div>
@@ -210,21 +198,10 @@
                     <i class="fas fa-save"></i>
                     Update User
                 </button>
-                
-                @* <a href="@Url.Action("Details", new { id = Model.UserId })" class="btn btn-info">
-                    <i class="fas fa-eye"></i>
-                    View Details
-                </a> *@
-                
                 <a href="@Url.Action("Index")" class="btn btn-secondary">
                     <i class="fas fa-times"></i>
                     Cancel
                 </a>
-                
-                @* <button type="reset" class="btn btn-outline-secondary">
-                    <i class="fas fa-undo"></i>
-                    Reset Changes
-                </button> *@
             </div>
         </form>
     </div>

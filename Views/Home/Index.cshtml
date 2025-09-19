@@ -30,19 +30,6 @@
                     <li class="nav-item">
                         <a href="#featured-events" class="nav-link">Events</a>
                     </li>
-                    @* <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle">Categories <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            @foreach (var category in Model.Categories)
-                            {
-                                <li>
-                                    <a href="#" data-category="@category.CategoryId">
-                                        <i class="fas fa-@(GetCategoryIcon(category.CategoryName))"></i> @category.CategoryName
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </li> *@
                     <li class="nav-item dropdown">
                         <a href="#"
                            class="nav-link dropdown-toggle"
@@ -66,11 +53,9 @@
                     </li>
 
                     <li class="nav-item">
-                        @* <a href="#" class="nav-link">About</a> *@
                         <a href="@Url.Action("About", "Home")" class="nav-link ">About</a>
                     </li>
                     <li class="nav-item me-3">
-                        @* <a href="#" class="nav-link">Contact</a> *@
                         <a href="@Url.Action("Contact", "Home")" class="nav-link ">Contact</a>
                     </li>
                 </ul>
@@ -90,8 +75,6 @@
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="userMenuButton">
                                 <li><a class="dropdown-item" href="@Url.Action("Index", "Customer")">Dashboard</a></li>
-                                @* <li><a class="dropdown-item" href="#">My Bookings</a></li>
-                                <li><a class="dropdown-item" href="#">Profile</a></li> *@
                                 <li><a class="dropdown-item" href="@Url.Action("Logout", "Auth")">Logout</a></li>
                             </ul>
                         </div>
@@ -120,24 +103,6 @@
                 <div class="hero-content">
                     <h1>Discover Amazing Events</h1>
                     <p>Find and book tickets for concerts, shows, sports, and more</p>
-                    @* <div class="hero-search">
-                        <input type="text" id="hero-search-query" placeholder="Event name or artist">
-                        <select id="hero-search-location">
-                            <option value="">All Locations</option>
-                            <option value="Colombo">Colombo</option>
-                            <option value="Galle">Galle</option>
-                            <option value="Kandy">Kandy</option>
-                        </select>
-                        <select id="hero-search-category">
-                            <option value="">All Categories</option>
-                            @foreach (var category in Model.Categories)
-                            {
-                                <option value="@category.CategoryId">@category.CategoryName</option>
-                            }
-                        </select>
-                        <input type="date" id="hero-search-date">
-                        <button class="btn btn-primary" id="hero-search-btn">Search Events</button>
-                    </div> *@
                 </div>
             </div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920&h=800&fit=crop');">
@@ -346,11 +311,6 @@
         <div class="container">
             <div class="section-header">
                 <h2>Featured Events</h2>
-                @* <div class="event-tabs">
-                    <button class="tab-btn active" data-tab="trending">Trending</button>
-                    <button class="tab-btn" data-tab="upcoming">This Week</button>
-                    <button class="tab-btn" data-tab="rated">Top Rated</button>
-                </div> *@
             </div>
 
             <div class="events-grid" id="events-grid">

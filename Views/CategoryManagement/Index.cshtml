@@ -91,21 +91,7 @@
                                     <a href="@Url.Action("Delete", new { id = category.CategoryId })"
                                        class="btn btn-sm btn-outline-primary" title="Edit">
                                         <i class="fas fa-trash"></i>
-                                    </a>
-                                    @* @if ((category.Events?.Count ?? 0) == 0)
-                                    {
-                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                onclick="deleteCategory(@category.CategoryId, '@category.CategoryName')" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                disabled title="Cannot delete - has events">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    } *@
+                                    </a>                                   
                                 </div>
                             </td>
                         </tr>

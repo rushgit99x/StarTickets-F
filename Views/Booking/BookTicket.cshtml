@@ -63,8 +63,7 @@
                                 var category = Model.TicketCategories[i];
                                 <div class="ticket-category" data-category-id="@category.TicketCategoryId">
                                     <div class="category-header">
-                                        <h3>@category.CategoryName</h3>
-                                        @* <span class="price">${category.Price}</span> *@
+                                        <h3>@category.CategoryName</h3>                                       
                                     </div>
 
                                     @if (!string.IsNullOrEmpty(category.Description))

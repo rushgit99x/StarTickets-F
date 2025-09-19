@@ -109,44 +109,17 @@
         </form>
     </div>
 
-    @* <!-- Bulk Actions -->
-    <div class="bulk-actions">
-        <div class="bulk-select">
-            <input type="checkbox" id="selectAll" class="bulk-checkbox">
-            <label for="selectAll">Select All</label>
-        </div>
-        
-        <div class="bulk-buttons" style="display: none;">
-            <button type="button" class="btn btn-success btn-sm" onclick="bulkAction('activate')">
-                <i class="fas fa-check"></i>
-                Activate Selected
-            </button>
-            <button type="button" class="btn btn-warning btn-sm" onclick="bulkAction('deactivate')">
-                <i class="fas fa-ban"></i>
-                Deactivate Selected
-            </button>
-            <button type="button" class="btn btn-info btn-sm" onclick="bulkAction('confirm_email')">
-                <i class="fas fa-envelope-check"></i>
-                Confirm Email
-            </button>
-
-        </div>
-    </div> *@
-
     <!-- Users Table -->
     <div class="table-container">
         <table class="users-table">
             <thead>
                 <tr>
                     <th class="checkbox-col">
-                        @* <input type="checkbox" id="selectAllTable" class="bulk-checkbox"> *@
                     </th>
                     <th>User</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
-                    @* <th>Email Confirmed</th> *@
-                    @* <th>Loyalty Points</th> *@
                     <th>Created Date</th>
                     <th>Actions</th>
                 </tr>
@@ -156,7 +129,6 @@
                 {
                     <tr data-user-id="@user.UserId">
                         <td>
-                            @* <input type="checkbox" class="user-checkbox" value="@user.UserId"> *@
                         </td>
                         <td>
                             <div class="user-info">
@@ -175,10 +147,6 @@
                         <td>
                             <div class="email-cell">
                                 @user.Email
-                                @* @if(!user.EmailConfirmed)
-                                {
-                                    <span class="unverified-badge">Unverified</span>
-                                } *@
                             </div>
                         </td>
                         <td>
@@ -191,19 +159,6 @@
                                 @(user.IsActive ? "Active" : "Inactive")
                             </span>
                         </td>
-                        @* <td>
-                            @if(user.EmailConfirmed)
-                            {
-                                <i class="fas fa-check-circle text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-times-circle text-danger"></i>
-                            }
-                        </td> *@
-                        @* <td>
-                            <span class="loyalty-points">@user.LoyaltyPoints.ToString("N0")</span>
-                        </td> *@
                         <td>
                             <div class="date-cell">
                                 <div class="date">@user.CreatedAt?.ToString("MMM dd, yyyy")</div>
@@ -212,22 +167,9 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                @* <a href="@Url.Action("Details", new { id = user.UserId })" class="btn-action btn-view" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a> *@
                                 <a href="@Url.Action("Edit", new { id = user.UserId })" class="btn-action btn-edit" title="Edit User">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                @* <button type="button" class="btn-action @(user.IsActive ? "btn-warning" : "btn-success")" 
-                                        onclick="toggleUserStatus(@user.UserId, @user.IsActive.ToString().ToLower())" 
-                                        title="@(user.IsActive ? "Deactivate" : "Activate") User">
-                                    <i class="fas fa-@(user.IsActive ? "ban" : "check")"></i>
-                                </button> *@
-                                @* <button type="button" class="btn-action btn-info" 
-                                        onclick="showResetPasswordModal(@user.UserId, '@user.FullName')" 
-                                        title="Reset Password">
-                                    <i class="fas fa-key"></i>
-                                </button> *@
                                 <a href="@Url.Action("Delete", new { id = user.UserId })" class="btn-action btn-delete" title="Delete User">
                                     <i class="fas fa-trash"></i>
                                 </a>

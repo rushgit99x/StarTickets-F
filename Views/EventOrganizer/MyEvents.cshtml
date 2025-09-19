@@ -1,7 +1,6 @@
 ﻿@model StarTickets.Models.ViewModels.EventOrganizerEventsViewModel
 @{
     ViewData["Title"] = "My Events";
-    // Layout = "~/Views/Shared/CustomLayouts/_MyEventsManagement.cshtml";
 }
 
 <link rel="stylesheet" href="~/css/MyEvents.css">
@@ -245,12 +244,6 @@
                                         <a href="~/EventOrganizer/EditEvent/@eventItem.EventId" class="btn btn-sm btn-warning" title="Edit Event">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        @* @if (eventItem.Status == StarTickets.Models.EventStatus.Draft)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-success" onclick="submitForApproval(@eventItem.EventId)" title="Submit for Approval">
-                                                <i class="fas fa-paper-plane"></i>
-                                            </button>
-                                        } *@
                                         @if (eventItem.Bookings?.Any() != true)
                                         {
                                             <button type="button" class="btn btn-sm btn-danger" onclick="deleteEvent(@eventItem.EventId)" title="Delete Event">

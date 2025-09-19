@@ -298,10 +298,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        @* <button class="btn btn-outline-primary" onclick="sendConfirmationEmail()">
-                            <i class="fas fa-envelope me-2"></i>
-                            Send Confirmation Email
-                        </button> *@
                         <form method="post" action="@Url.Action("Delete", "BookingManagement", new { id = Model.Booking.BookingId })" onsubmit="return confirmDelete();">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-outline-danger w-100">

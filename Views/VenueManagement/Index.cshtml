@@ -159,43 +159,6 @@
                                            class="btn btn-sm btn-outline-primary" title="Edit">
                                             <i class="fas fa-trash"></i>
                                         </a>
-                                          <!-- Toggle Status Button -->
-                                            @* <button type="button" 
-                                                    class="btn btn-sm btn-outline-@(venue.IsActive ? "warning" : "success") toggle-status-btn" 
-                                                    data-venue-id="@venue.VenueId"
-                                                    title="@(venue.IsActive ? "Deactivate" : "Activate") Venue">
-                                                <i class="fas fa-@(venue.IsActive ? "pause" : "play")"></i>
-                                            </button> *@
-
-                                            <!-- Delete Button -->
-                                            @* <button type="button" 
-                                                    class="btn btn-sm btn-outline-danger delete-venue-btn" 
-                                                    data-venue-id="@venue.VenueId"
-                                                    title="Delete Venue">
-                                                <i class="fas fa-trash"></i>
-                                            </button> *@
-                                        @* <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                    data-bs-toggle="dropdown">
-                                                <i class="fas fa-cog"></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <button class="dropdown-item toggle-status-btn" 
-                                                            data-venue-id="@venue.VenueId">
-                                                        <i class="fas fa-@(venue.IsActive ? "pause" : "play") text-@(venue.IsActive ? "warning" : "success")"></i> 
-                                                        @(venue.IsActive ? "Deactivate" : "Activate")
-                                                    </button>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-danger delete-venue-btn" 
-                                                            data-venue-id="@venue.VenueId">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div> *@
                                     </div>
                                 </td>
                             </tr>

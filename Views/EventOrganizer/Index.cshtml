@@ -22,11 +22,9 @@
         </div>
 
         <div class="menu-item">
-            @* <a href="#" class="menu-link" data-page="my-events"> *@
             <a href="@Url.Action("MyEvents")" class="menu-link" data-page="my-events">
                 <i class="fas fa-calendar-check menu-icon"></i>
                 <span class="menu-text">My Events</span>
-                @* <span class="menu-badge">5</span> *@
             </a>
         </div>
 
@@ -36,14 +34,6 @@
                 <span class="menu-text">Create Event</span>
             </a>
         </div>
-
-        @* <div class="menu-item">
-            <a href="@Url.Action("Sales")" class="menu-link" data-page="ticket-sales">
-                <i class="fas fa-ticket-alt menu-icon"></i>
-                <span class="menu-text">Ticket Sales</span>
-            </a>
-        </div> *@
-
         <div class="menu-item">
             <a href="@Url.Action("Sales")" class="menu-link" data-page="revenue">
                 <i class="fas fa-chart-line menu-icon"></i>
@@ -52,14 +42,12 @@
         </div>
         <div class="menu-item">
             <a href="@Url.Action("Profile")" class="menu-link" data-page="profile">
-            @* <a href="#" class="menu-link" data-page="profile"> *@
                 <i class="fas fa-user-circle menu-icon"></i>
                 <span class="menu-text">Profile</span>
             </a>
         </div>
 
         <div class="menu-item">
-            @* <a href="/Account/Logout" class="menu-link"> *@
             <a href="@Url.Action("Logout")" class="menu-link" data-page="create-event">
                 <i class="fas fa-sign-out-alt menu-icon"></i>
                 <span class="menu-text">Logout</span>
@@ -77,16 +65,6 @@
         </button>
 
         <div class="topbar-right">
-            @* <div class="topbar-search">
-                <input type="text" placeholder="Search events, tickets, customers...">
-                <i class="fas fa-search search-icon"></i>
-            </div> *@
-
-            @* <div class="position-relative">
-                <i class="fas fa-bell" style="font-size: 18px; color: #6b7280; cursor: pointer;"></i>
-                <div class="notification-dot"></div>
-            </div> *@
-
             @{ 
                 var displayName = (ViewBag.UserName as string) ?? "Event Organizer"; 
                 var displayEmail = (ViewBag.UserEmail as string) ?? "organizer@startickets.com"; 
@@ -194,7 +172,6 @@
                         <i class="fas fa-calendar-alt"></i>
                         My Upcoming Events
                     </h3>
-                    @* <a href="#" class="quick-action-btn" data-action="my-events">View All Events</a> *@
                 </div>
                 <div class="card-body">
                     <div class="table-wrapper">
