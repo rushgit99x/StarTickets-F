@@ -1,0 +1,139 @@
+﻿@model StarTickets.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    // Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/CustomLayouts/_Register.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/register.css" rel="stylesheet" />
+}
+
+<div class="register-container">
+    <div class="floating-elements"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <div class="register-card">
+                    <div class="card-header">
+                        <h1 class="card-title">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </h1>
+                        <p class="card-subtitle">Join StarTickets today and discover amazing events</p>
+                    </div>
+
+                    <div class="card-body">
+                        <form asp-action="Register" method="post" novalidate>
+                            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FirstName" class="form-label">
+                                            <i class="fas fa-user"></i>
+                                            First Name
+                                        </label>
+                                        <input asp-for="FirstName"
+                                               class="form-control"
+                                               placeholder="Enter first name"
+                                               autocomplete="given-name"
+                                               required />
+                                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="LastName" class="form-label">
+                                            <i class="fas fa-user"></i>
+                                            Last Name
+                                        </label>
+                                        <input asp-for="LastName"
+                                               class="form-control"
+                                               placeholder="Enter last name"
+                                               autocomplete="family-name"
+                                               required />
+                                        <span asp-validation-for="LastName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label">
+                                    <i class="fas fa-envelope"></i>
+                                    Email Address
+                                </label>
+                                <input asp-for="Email"
+                                       class="form-control"
+                                       type="email"
+                                       placeholder="Enter your email"
+                                       autocomplete="email"
+                                       required />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Role" class="form-label">
+                                    <i class="fas fa-user-tag"></i>
+                                    Account Type
+                                </label>
+                                <div class="role-selector">
+                                    <select asp-for="Role" class="form-control" required>
+                                        <option value="">Select account type</option>
+                                        <option value="3">Customer - Discover and book events</option>
+                                        <option value="2">Event Organizer - Create and manage events</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Password" class="form-label">
+                                    <i class="fas fa-lock"></i>
+                                    Password
+                                </label>
+                                <input asp-for="Password"
+                                       class="form-control"
+                                       type="password"
+                                       placeholder="Create a strong password"
+                                       autocomplete="new-password"
+                                       required />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="ConfirmPassword" class="form-label">
+                                    <i class="fas fa-lock"></i>
+                                    Confirm Password
+                                </label>
+                                <input asp-for="ConfirmPassword"
+                                       class="form-control"
+                                       type="password"
+                                       placeholder="Confirm your password"
+                                       autocomplete="new-password"
+                                       required />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    Create Account
+                                </button>
+                            </div>
+
+                            <div class="login-link">
+                                <p>Already have an account? <a asp-action="Login" asp-controller="Auth">Sign in here</a></p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/register.js"></script>
+}

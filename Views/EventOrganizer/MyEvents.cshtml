@@ -1,0 +1,421 @@
+﻿@model StarTickets.Models.ViewModels.EventOrganizerEventsViewModel
+@{
+    ViewData["Title"] = "My Events";
+    // Layout = "~/Views/Shared/CustomLayouts/_MyEventsManagement.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/MyEvents.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-calendar-check"></i> My Events</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="~/EventOrganizer">Dashboard</a></li>
+                <li class="breadcrumb-item active">My Events</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="alert alert-danger" id="errorAlert" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i>
+        <div id="errorMessage"></div>
+    </div>
+
+    <div class="alert alert-success" id="successAlert" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <div id="successMessage"></div>
+    </div>
+
+    <!-- Events Management Card -->
+    <div class="main-card">
+        <!-- Header Actions -->
+        <div class="card-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h3><i class="fas fa-list"></i> Events Management</h3>
+                    <span class="event-count">@Model.TotalEvents events found</span>
+                </div>
+                <div class="header-right">
+                    <a href="~/EventOrganizer/CreateEvent" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create New Event
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <form method="get" asp-action="MyEvents" asp-controller="EventOrganizer" id="filterForm">
+                @Html.AntiForgeryToken()
+                <div class="filter-grid">
+                    <!-- Search -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-search"></i>
+                            Search Events
+                        </label>
+                        <input type="text" asp-for="SearchTerm" class="form-control" 
+                               placeholder="Search by name, description, or venue..." 
+                               value="@Model.SearchTerm">
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-tags"></i>
+                            Category
+                        </label>
+                        <select asp-for="CategoryFilter" class="form-select">
+                            <option value="0">All Categories</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.CategoryId" selected="@(Model.CategoryFilter == category.CategoryId)">
+                                    @category.CategoryName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-flag"></i>
+                            Status
+                        </label>
+                        <select asp-for="StatusFilter" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="@StarTickets.Models.EventStatus.Draft" selected="@(Model.StatusFilter == StarTickets.Models.EventStatus.Draft)">Draft</option>
+                            <option value="@StarTickets.Models.EventStatus.Published" selected="@(Model.StatusFilter == StarTickets.Models.EventStatus.Published)">Published</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-filter">
+                            <i class="fas fa-filter"></i>
+                            Apply Filters
+                        </button>
+                        <a href="~/EventOrganizer/MyEvents" class="btn btn-clear">
+                            <i class="fas fa-times"></i>
+                            Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Events List -->
+        <div class="events-container">
+            @if (Model.Events.Any())
+            {
+                <div class="events-grid">
+                    @foreach (var eventItem in Model.Events)
+                    {
+                        <div class="event-card" data-event-id="@eventItem.EventId">
+                            <!-- Event Image -->
+                            <div class="event-image">
+                                @if (!string.IsNullOrEmpty(eventItem.ImageUrl))
+                                {
+                                    <img src="@eventItem.ImageUrl" alt="@eventItem.EventName" onerror="this.src='/images/default-event.jpg'">
+                                }
+                                else
+                                {
+                                    <div class="no-image">
+                                        <i class="fas fa-image"></i>
+                                        <span>No Image</span>
+                                    </div>
+                                }
+                                
+                                <!-- Status Badge -->
+                                <div class="status-badge status-@eventItem.Status.ToString().ToLower()">
+                                    @switch (eventItem.Status)
+                                    {
+                                        case StarTickets.Models.EventStatus.Draft:
+                                            <i class="fas fa-edit"></i>
+                                            <span>Draft</span>
+                                            break;
+                                        case StarTickets.Models.EventStatus.Published:
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Published</span>
+                                            break;
+                                        default:
+                                            <i class="fas fa-question"></i>
+                                            <span>@eventItem.Status</span>
+                                            break;
+                                    }
+                                </div>
+
+                                <!-- Active Badge -->
+                                @if (!eventItem.IsActive)
+                                {
+                                    <div class="inactive-badge">
+                                        <i class="fas fa-pause"></i>
+                                        <span>Inactive</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Event Content -->
+                            <div class="event-content">
+                                <div class="event-header">
+                                    <h4 class="event-title">@eventItem.EventName</h4>
+                                    <div class="event-category">@eventItem.Category?.CategoryName</div>
+                                </div>
+
+                                <div class="event-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>@eventItem.EventDate.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>@eventItem.EventDate.ToString("hh:mm tt")</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>@eventItem.Venue?.VenueName</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(eventItem.BandName))
+                                    {
+                                        <div class="detail-item">
+                                            <i class="fas fa-music"></i>
+                                            <span>@eventItem.BandName</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Event Stats -->
+                                <div class="event-stats">
+                                    @{
+                                        var totalTicketsSold = eventItem.Bookings?
+                                            .Where(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed)
+                                            .SelectMany(b => b.BookingDetails!)
+                                            .Sum(bd => bd.Quantity) ?? 0;
+
+                                        var totalRevenue = eventItem.Bookings?
+                                            .Where(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed)
+                                            .Sum(b => b.FinalAmount) ?? 0;
+
+                                        var totalCapacity = eventItem.TicketCategories?.Sum(tc => tc.TotalQuantity) ?? 0;
+                                    }
+
+                                    <div class="stat-item">
+                                        <span class="stat-value">@totalTicketsSold</span>
+                                        <span class="stat-label">Tickets Sold</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">@totalCapacity</span>
+                                        <span class="stat-label">Total Capacity</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">$@totalRevenue.ToString("N2")</span>
+                                        <span class="stat-label">Revenue</span>
+                                    </div>
+                                </div>
+
+                                <!-- Event Actions -->
+                                <div class="event-actions">
+                                    <div class="action-group">
+                                        <a href="~/EventOrganizer/EventDetails/@eventItem.EventId" class="btn btn-sm btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="~/EventOrganizer/EditEvent/@eventItem.EventId" class="btn btn-sm btn-warning" title="Edit Event">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @* @if (eventItem.Status == StarTickets.Models.EventStatus.Draft)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success" onclick="submitForApproval(@eventItem.EventId)" title="Submit for Approval">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        } *@
+                                        @if (eventItem.Bookings?.Any() != true)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteEvent(@eventItem.EventId)" title="Delete Event">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination-container">
+                        <nav aria-label="Events pagination">
+                            <ul class="pagination">
+                                <!-- Previous -->
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("MyEvents", new { 
+                                            page = Model.CurrentPage - 1, 
+                                            searchTerm = Model.SearchTerm, 
+                                            categoryFilter = Model.CategoryFilter, 
+                                            statusFilter = Model.StatusFilter 
+                                        })">
+                                            <i class="fas fa-chevron-left"></i>
+                                            Previous
+                                        </a>
+                                    </li>
+                                }
+
+                                <!-- Page Numbers -->
+                                @{
+                                    var startPage = Math.Max(1, Model.CurrentPage - 2);
+                                    var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                                }
+
+                                @for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("MyEvents", new { 
+                                            page = i, 
+                                            searchTerm = Model.SearchTerm, 
+                                            categoryFilter = Model.CategoryFilter, 
+                                            statusFilter = Model.StatusFilter 
+                                        })">@i</a>
+                                    </li>
+                                }
+
+                                <!-- Next -->
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("MyEvents", new { 
+                                            page = Model.CurrentPage + 1, 
+                                            searchTerm = Model.SearchTerm, 
+                                            categoryFilter = Model.CategoryFilter, 
+                                            statusFilter = Model.StatusFilter 
+                                        })">
+                                            Next
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+
+                        <div class="pagination-info">
+                            Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) to @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalEvents)) of @Model.TotalEvents events
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- No Events Found -->
+                <div class="no-events">
+                    <div class="no-events-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h3>No Events Found</h3>
+                    <p>You haven't created any events yet, or none match your current filters.</p>
+                    <div class="no-events-actions">
+                        <a href="~/EventOrganizer/CreateEvent" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Create Your First Event
+                        </a>
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.CategoryFilter > 0 || Model.StatusFilter.HasValue)
+                        {
+                            <a href="~/EventOrganizer/MyEvents" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Clear Filters
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this event? This action cannot be undone.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle"></i>
+                    Note: Events with existing bookings cannot be deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i>
+                    Delete Event
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approval Confirmation Modal -->
+<div class="modal fade" id="approvalModal" tabindex="-1" aria-labelledby="approvalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approvalModalLabel">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit for Approval
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you ready to submit this event for admin approval?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Once submitted, you may not be able to make changes until it's reviewed by administrators.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmApprovalBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit for Approval
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/MyEvents.js"></script>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+}

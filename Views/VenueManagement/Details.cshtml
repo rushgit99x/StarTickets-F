@@ -1,0 +1,273 @@
+﻿@model StarTickets.Models.ViewModels.VenueDetailsViewModel
+@{
+    ViewData["Title"] = $"Venue Details - {Model.Venue.VenueName}";
+    ViewBag.PageDescription = "View detailed venue information and statistics";
+    Layout = "~/Views/Shared/CustomLayouts/_EventManagement.cshtml";
+}
+
+<div class="venue-details-container">
+    <!-- Details Header -->
+    <div class="details-header">
+        <div class="header-actions">
+            <div class="header-left">
+                <div class="breadcrumb-nav">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Venues
+                    </a>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="action-buttons">
+                    <a href="@Url.Action("Edit", new { id = Model.Venue.VenueId })" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Venue
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i> Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            @* <li>
+                                <button class="dropdown-item toggle-status-btn" data-venue-id="@Model.Venue.VenueId">
+                                    <i class="fas fa-@(Model.Venue.IsActive ? "pause" : "play") text-@(Model.Venue.IsActive ? "warning" : "success")"></i>
+                                    @(Model.Venue.IsActive ? "Deactivate" : "Activate")
+                                </button>
+                            </li> *@
+                            @* <li><hr class="dropdown-divider"></li> *@
+                            <li>
+                                <a href="@Url.Action("Delete", new { id = Model.Venue.VenueId })"
+                                   class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="fas fa-trash"></i>  Delete Venue
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Venue Information -->
+    <div class="venue-main-card">
+        <div class="venue-content">
+            <div class="venue-header">
+                <div class="venue-title-section">
+                    <h1 class="venue-title">@Model.Venue.VenueName</h1>
+                    <div class="venue-status-info">
+                        <span class="status-badge status-@(Model.Venue.IsActive ? "active" : "inactive")">
+                            @(Model.Venue.IsActive ? "Active" : "Inactive")
+                        </span>
+                        <small class="text-muted ms-3">
+                            <i class="fas fa-calendar-alt"></i>
+                            Created: @Model.Venue.CreatedAt.ToString("MMM dd, yyyy")
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="venue-meta">
+                <div class="meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <strong>Location</strong>
+                        <p>
+                            @Model.Venue.Address<br>
+                            @Model.Venue.City, @(!string.IsNullOrEmpty(Model.Venue.State) ? Model.Venue.State + ", " : "")@Model.Venue.Country
+                            @if (!string.IsNullOrEmpty(Model.Venue.PostalCode))
+                            {
+                                <br>
+                                @Model.Venue.PostalCode
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                <div class="meta-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <strong>Capacity</strong>
+                        <p>@Model.Venue.Capacity.ToString("N0") people</p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Venue.ContactEmail) || !string.IsNullOrEmpty(Model.Venue.ContactPhone))
+                {
+                    <div class="meta-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <strong>Contact</strong>
+                            <p>
+                                @if (!string.IsNullOrEmpty(Model.Venue.ContactEmail))
+                                {
+                                    <a href="mailto:@Model.Venue.ContactEmail">@Model.Venue.ContactEmail</a>
+                            
+                                    <br>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Venue.ContactPhone))
+                                {
+                                    <a href="tel:@Model.Venue.ContactPhone">@Model.Venue.ContactPhone</a>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+
+                <div class="meta-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <div>
+                        <strong>Events</strong>
+                        <p>
+                            @Model.TotalEvents total events<br>
+                            @Model.UpcomingEvents upcoming
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Venue.Facilities))
+            {
+                <div class="venue-facilities">
+                    <h5><i class="fas fa-list"></i> Facilities & Amenities</h5>
+                    <div class="facilities-content">
+                        @Html.Raw(Html.Encode(Model.Venue.Facilities).Replace("\n", "<br>"))
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Statistics Card -->
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>@Model.TotalEvents</h4>
+                            <p>Total Events</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>@Model.UpcomingEvents</h4>
+                            <p>Upcoming Events</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>@Model.PastEvents</h4>
+                            <p>Past Events</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4>$@Model.TotalRevenue.ToString("N0")</h4>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+
+                    @if (Model.TotalEvents > 0)
+                    {
+                        <div class="overall-progress">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small>Venue Utilization</small>
+                                <small>@((Model.UpcomingEvents > 0 ? (double)Model.UpcomingEvents / Model.TotalEvents * 100 : 0).ToString("F1"))%</small>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: @((Model.UpcomingEvents > 0 ? (double)Model.UpcomingEvents / Model.TotalEvents * 100 : 0).ToString("F1"))%">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="col-lg-8">
+            <div class="info-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recent Events</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentEvents.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var evt in Model.RecentEvents)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@evt.EventName</strong>
+                                                @if (!string.IsNullOrEmpty(evt.BandName))
+                                                {
+                                                    <br>
+                                        
+                                                    <small class="text-muted">@evt.BandName</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    @evt.EventDate.ToString("MMM dd, yyyy")<br>
+                                                    @evt.EventDate.ToString("hh:mm tt")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-category">@evt.Category?.CategoryName</span>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge status-@evt.Status.ToString().ToLower()">
+                                                    @evt.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("Index", "EventManagement", new { venueFilter = Model.Venue.VenueId })" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt"></i> View All Events at This Venue
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state-small">
+                            <i class="fas fa-calendar-times"></i>
+                            <h6>No Events</h6>
+                            <p>No events have been scheduled at this venue yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

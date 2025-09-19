@@ -1,0 +1,384 @@
+﻿@model StarTickets.Models.ViewModels.EditEventOrganizerViewModel
+@{
+    ViewData["Title"] = "Edit Event";
+}
+
+<link rel="stylesheet" href="~/css/EditEvent.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-edit"></i> Edit Event</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="~/EventOrganizer">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="~/EventOrganizer/MyEvents">My Events</a></li>
+                <li class="breadcrumb-item active">Edit Event</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="alert alert-danger" id="errorAlert" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i>
+        <div id="errorMessage"></div>
+    </div>
+
+    <div class="alert alert-success" id="successAlert" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <div id="successMessage"></div>
+    </div>
+
+    <!-- Edit Event Form -->
+    <div class="main-card">
+        <form asp-action="EditEvent" asp-controller="EventOrganizer" method="post" id="editEventForm" novalidate>
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.EventId)
+
+            <!-- Form Header -->
+            <div class="card-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h3><i class="fas fa-calendar-edit"></i> Event Information</h3>
+                        <span class="form-description">Update your event details and settings</span>
+                    </div>
+                    <div class="header-right">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='@Url.Action("MyEvents", "EventOrganizer")'">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="saveEventBtn">
+                            <i class="fas fa-save"></i>
+                            Update Event
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-container">
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Event Name -->
+                        <div class="form-group col-span-2">
+                            <label asp-for="EventName" class="form-label required">
+                                <i class="fas fa-tag"></i>
+                                Event Name
+                            </label>
+                            <input asp-for="EventName" class="form-control" placeholder="Enter event name">
+                            <span asp-validation-for="EventName" class="validation-error"></span>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="form-label required">
+                                <i class="fas fa-layer-group"></i>
+                                Category
+                            </label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="">Select Category</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category.CategoryId">@category.CategoryName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="validation-error"></span>
+                        </div>
+
+                        <!-- Venue -->
+                        <div class="form-group">
+                            <label asp-for="VenueId" class="form-label required">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Venue
+                            </label>
+                            <select asp-for="VenueId" class="form-select">
+                                <option value="">Select Venue</option>
+                                @foreach (var venue in Model.Venues)
+                                {
+                                    <option value="@venue.VenueId">@venue.VenueName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="VenueId" class="validation-error"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group col-span-2">
+                            <label asp-for="Description" class="form-label">
+                                <i class="fas fa-align-left"></i>
+                                Description
+                            </label>
+                            <textarea asp-for="Description" class="form-control textarea-large" rows="4" placeholder="Enter event description..."></textarea>
+                            <span asp-validation-for="Description" class="validation-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & Time Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-clock"></i> Date & Time</h4>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Event Date -->
+                        <div class="form-group">
+                            <label asp-for="EventDate" class="form-label required">
+                                <i class="fas fa-calendar"></i>
+                                Event Date & Time
+                            </label>
+                            <input asp-for="EventDate" type="datetime-local" class="form-control">
+                            <span asp-validation-for="EventDate" class="validation-error"></span>
+                        </div>
+
+                        <!-- End Date -->
+                        <div class="form-group">
+                            <label asp-for="EndDate" class="form-label">
+                                <i class="fas fa-calendar-times"></i>
+                                End Date & Time
+                            </label>
+                            <input asp-for="EndDate" type="datetime-local" class="form-control">
+                            <span asp-validation-for="EndDate" class="validation-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Details Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-music"></i> Performance Details</h4>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Band Name -->
+                        <div class="form-group">
+                            <label asp-for="BandName" class="form-label">
+                                <i class="fas fa-users"></i>
+                                Band/Artist Name
+                            </label>
+                            <input asp-for="BandName" class="form-control" placeholder="Enter band or artist name">
+                            <span asp-validation-for="BandName" class="validation-error"></span>
+                        </div>
+
+                        <!-- Main Performer -->
+                        <div class="form-group">
+                            <label asp-for="Performer" class="form-label">
+                                <i class="fas fa-star"></i>
+                                Main Performer
+                            </label>
+                            <input asp-for="Performer" class="form-control" placeholder="Enter main performer name">
+                            <span asp-validation-for="Performer" class="validation-error"></span>
+                        </div>
+
+                        <!-- Event Image -->
+                        <div class="form-group col-span-2">
+                            <label asp-for="ImageUrl" class="form-label">
+                                <i class="fas fa-image"></i>
+                                Event Image URL
+                            </label>
+                            <div class="image-input-group">
+                                <input asp-for="ImageUrl" class="form-control" placeholder="Enter image URL" id="imageUrlInput">
+                                <button type="button" class="btn btn-preview" onclick="previewImage()" title="Preview Image">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ImageUrl" class="validation-error"></span>
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ticket Categories Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-ticket-alt"></i> Ticket Categories</h4>
+                        <button type="button" class="btn btn-add" onclick="addTicketCategory()">
+                            <i class="fas fa-plus"></i>
+                            Add Category
+                        </button>
+                    </div>
+
+                    <div class="ticket-categories-container" id="ticketCategoriesContainer">
+                        @if (Model.TicketCategories != null && Model.TicketCategories.Any())
+                        {
+                            @for (int i = 0; i < Model.TicketCategories.Count; i++)
+                            {
+                                <div class="ticket-category-item" data-index="@i">
+                                    @Html.HiddenFor(m => m.TicketCategories[i].TicketCategoryId)
+
+                                    <div class="category-header">
+                                        <h5>Ticket Category #@(i + 1)</h5>
+                                        <button type="button" class="btn btn-remove" onclick="removeTicketCategory(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="category-grid">
+                                        <div class="form-group">
+                                            <label class="form-label required">
+                                                <i class="fas fa-tag"></i>
+                                                Category Name
+                                            </label>
+                                            @Html.TextBoxFor(m => m.TicketCategories[i].CategoryName, new { @class = "form-control", placeholder = "e.g., VIP, General Admission" })
+                                            @Html.ValidationMessageFor(m => m.TicketCategories[i].CategoryName, "", new { @class = "validation-error" })
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label required">
+                                                <i class="fas fa-dollar-sign"></i>
+                                                Price ($)
+                                            </label>
+                                            @Html.TextBoxFor(m => m.TicketCategories[i].Price, new { @class = "form-control", type = "number", step = "0.01", min = "0" })
+                                            @Html.ValidationMessageFor(m => m.TicketCategories[i].Price, "", new { @class = "validation-error" })
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label required">
+                                                <i class="fas fa-sort-numeric-up"></i>
+                                                Total Quantity
+                                            </label>
+                                            @Html.TextBoxFor(m => m.TicketCategories[i].TotalQuantity, new { @class = "form-control", type = "number", min = "1" })
+                                            @Html.ValidationMessageFor(m => m.TicketCategories[i].TotalQuantity, "", new { @class = "validation-error" })
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-check-circle"></i>
+                                                Available Quantity
+                                            </label>
+                                            @Html.TextBoxFor(m => m.TicketCategories[i].AvailableQuantity, new { @class = "form-control", type = "number", min = "0" })
+                                            @Html.ValidationMessageFor(m => m.TicketCategories[i].AvailableQuantity, "", new { @class = "validation-error" })
+                                        </div>
+
+                                        <div class="form-group col-span-2">
+                                            <label class="form-label">
+                                                <i class="fas fa-info-circle"></i>
+                                                Description
+                                            </label>
+                                            @Html.TextAreaFor(m => m.TicketCategories[i].Description, new { @class = "form-control", rows = "2", placeholder = "Optional description for this ticket category" })
+                                            @Html.ValidationMessageFor(m => m.TicketCategories[i].Description, "", new { @class = "validation-error" })
+                                        </div>
+
+                                        <div class="form-group col-span-2">
+                                            <div class="form-check">
+                                                @Html.CheckBoxFor(m => m.TicketCategories[i].IsActive, new { @class = "form-check-input" })
+                                                <label asp-for="@Model.TicketCategories[i].IsActive" class="form-check-label">
+                                                    Category is Active
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Event Settings Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-cog"></i> Event Settings</h4>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <div class="settings-group">
+                                <div class="form-check">
+                                    <input asp-for="IsActive" class="form-check-input">
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        <i class="fas fa-toggle-on"></i>
+                                        Event is Active
+                                    </label>
+                                    <small class="form-text">Inactive events won't be visible to customers</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <div class="actions-left">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='@Url.Action("MyEvents", "EventOrganizer")'">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to My Events
+                        </button>
+                    </div>
+                    <div class="actions-right">
+                        <button type="button" class="btn btn-outline" onclick="resetForm()">
+                            <i class="fas fa-undo"></i>
+                            Reset Changes
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Update Event
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">
+                    <i class="fas fa-question-circle"></i>
+                    Confirm Changes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to update this event with the changes you've made?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    This will update the event information and may affect existing bookings.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmUpdateBtn">
+                    <i class="fas fa-save"></i>
+                    Update Event
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/EditEvent.js"></script>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

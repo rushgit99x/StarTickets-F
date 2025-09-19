@@ -1,0 +1,463 @@
+@model StarTickets.Models.ViewModels.ReportsViewModel
+
+@{
+    ViewData["Title"] = "Sales";
+}
+
+<style>
+    :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #2a2a2a;
+        --bg-card: #1e1e1e;
+        --border-color: #333;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --text-muted: #666;
+        --accent-primary: #3b82f6;
+        --accent-secondary: #10b981;
+        --accent-warning: #f59e0b;
+        --accent-danger: #ef4444;
+        --gradient-primary: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        --gradient-secondary: linear-gradient(135deg, #10b981, #059669);
+        --gradient-tertiary: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        --gradient-quaternary: linear-gradient(135deg, #f59e0b, #d97706);
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .modern-container {
+        background: var(--bg-primary);
+        min-height: 100vh;
+        padding: 2rem 1rem;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .page-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.025em;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.125rem;
+        font-weight: 400;
+    }
+
+    .filter-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-control, .form-select {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            color: var(--text-primary);
+        }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+    .btn-outline-secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+    .btn-success {
+        background: var(--gradient-secondary);
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(16, 185, 129, 0.3);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-primary);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .kpi-card:nth-child(2)::before {
+            background: var(--gradient-secondary);
+        }
+
+        .kpi-card:nth-child(3)::before {
+            background: var(--gradient-tertiary);
+        }
+
+        .kpi-card:nth-child(4)::before {
+            background: var(--gradient-quaternary);
+        }
+
+    .kpi-title {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-change {
+        font-size: 0.875rem;
+        color: var(--accent-secondary);
+        font-weight: 500;
+    }
+
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+    }
+
+    .data-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        transition: all 0.3s ease;
+    }
+
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-color);
+        }
+
+    .card-header {
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem 2rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+        color: var(--text-primary);
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .modern-table thead {
+            background: var(--bg-secondary);
+        }
+
+        .modern-table th {
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modern-table td {
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background-color 0.2s ease;
+        }
+
+        .modern-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .modern-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    .text-end {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+        font-style: italic;
+    }
+
+    .no-data {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .modern-container
+
+    {
+        padding: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .filter-card {
+        padding: 1.5rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modern-table th,
+    .modern-table td {
+        padding: 0.75rem 1rem;
+    }
+
+    }
+</style>
+
+<div class="modern-container">
+    <div class="page-header">
+        <h1 class="page-title">Sales Dashboard</h1>
+        <p class="page-subtitle">Track your performance with advanced analytics</p>
+    </div>
+
+    <div class="filter-card">
+        <form method="get" asp-action="Sales" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="startDate" class="form-control" value="@(Model.Filter.StartDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" name="endDate" class="form-control" value="@(Model.Filter.EndDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Event</label>
+                <select name="eventId" class="form-select">
+                    <option value="">All Events</option>
+                    @if (ViewBag.Events != null)
+                    {
+                        foreach (var ev in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Events)
+                        {
+                            var selected = (ViewBag.SelectedEventId != null && ViewBag.SelectedEventId.ToString() == ev.Value) ? "selected" : "";
+                            <option value="@ev.Value" selected="@selected">@ev.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                <a class="btn btn-outline-secondary" asp-action="Sales">Reset</a>
+                <a class="btn btn-success"
+                   asp-action="DownloadSalesReport"
+                   asp-route-startDate="@(Model.Filter.StartDate?.ToString("yyyy-MM-dd"))"
+                   asp-route-endDate="@(Model.Filter.EndDate?.ToString("yyyy-MM-dd"))"
+                   asp-route-eventId="@(ViewBag.SelectedEventId)">Download PDF</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">Total Sales</div>
+            <div class="kpi-value">@Model.Kpis.TotalSales.ToString("C")</div>
+            <div class="kpi-change">Overall Revenue</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Total Bookings</div>
+            <div class="kpi-value">@Model.Kpis.TotalBookings</div>
+            <div class="kpi-change">Total Transactions</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Sales Today</div>
+            <div class="kpi-value">@Model.Kpis.SalesToday.ToString("C")</div>
+            <div class="kpi-change">Daily Performance</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Bookings Today</div>
+            <div class="kpi-value">@Model.Kpis.BookingsToday</div>
+            <div class="kpi-change">Daily Activity</div>
+        </div>
+    </div>
+
+    <div class="data-grid">
+        <div class="data-card">
+            <div class="card-header">Sales by Date</div>
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SalesByDate?.Any() == true)
+                        {
+                            foreach (var item in Model.SalesByDate)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-end"><strong>@item.Amount.ToString("C")</strong></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="2" class="no-data">No sales data available</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="data-card">
+            <div class="card-header">Top Events by Sales</div>
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th class="text-end">Bookings</th>
+                            <th class="text-end">Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.TopEvents?.Any() == true)
+                        {
+                            foreach (var ev in Model.TopEvents)
+                            {
+                                <tr>
+                                    <td><strong>@ev.EventName</strong></td>
+                                    <td class="text-end">@ev.Bookings</td>
+                                    <td class="text-end"><strong>@ev.Sales.ToString("C")</strong></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="3" class="no-data">No event data available</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,938 @@
+﻿@model StarTickets.Models.ViewModels.BookTicketViewModel
+@{
+    ViewData["Title"] = "Book Tickets - " + Model.Event.EventName;
+}
+
+<div class="booking-container">
+    <div class="container">
+        <!-- Event Header -->
+        <div class="event-header">
+            <div class="event-image">
+                <img src="@(Model.Event.ImageUrl ?? "/images/default-event.jpg")" alt="@Model.Event.EventName">
+            </div>
+            <div class="event-info">
+                <h1>@Model.Event.EventName</h1>
+                <div class="event-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>@Model.Event.EventDate.ToString("dddd, MMMM dd, yyyy")</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>@Model.Event.EventDate.ToString("hh:mm tt")</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>@Model.Event.Venue?.VenueName, @Model.Event.Venue?.City</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-user"></i>
+                        <span>@Model.Event.Performer</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-music"></i>
+                        <span>@Model.Event.BandName</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-tag"></i>
+                        <span>@Model.Event.Category?.CategoryName</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Event.Description))
+                {
+                    <p class="event-description">@Model.Event.Description</p>
+                }
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <form asp-action="ProcessBooking" method="post" id="booking-form" class="booking-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="EventId" value="@Model.Event.EventId" />
+
+            <div class="booking-sections">
+                <!-- Left Column - Ticket Selection -->
+                <div class="tickets-section">
+                    <h2><i class="fas fa-ticket-alt"></i> Select Your Tickets</h2>
+
+                    @if (Model.TicketCategories?.Any() == true)
+                    {
+                        <div class="ticket-categories">
+                            @for (int i = 0; i < Model.TicketCategories.Count; i++)
+                            {
+                                var category = Model.TicketCategories[i];
+                                <div class="ticket-category" data-category-id="@category.TicketCategoryId">
+                                    <div class="category-header">
+                                        <h3>@category.CategoryName</h3>
+                                        @* <span class="price">${category.Price}</span> *@
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(category.Description))
+                                    {
+                                        <p class="category-description">@category.Description</p>
+                                    }
+
+                                    <div class="availability">
+                                        <span class="available-count">@category.AvailableQuantity tickets available</span>
+                                    </div>
+
+                                    <div class="quantity-selector">
+                                        <label>Quantity:</label>
+                                        <div class="quantity-controls">
+                                            <button type="button" class="qty-btn minus" data-target="quantity_@category.TicketCategoryId">-</button>
+                                            <input type="number"
+                                                   id="quantity_@category.TicketCategoryId"
+                                                   name="SelectedCategories[@i].Quantity"
+                                                   value="0"
+                                                   min="0"
+                                                   max="@Math.Min(10, category.AvailableQuantity)"
+                                                   class="quantity-input"
+                                                   data-price="@category.Price">
+                                            <button type="button" class="qty-btn plus" data-target="quantity_@category.TicketCategoryId">+</button>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="SelectedCategories[@i].TicketCategoryId" value="@category.TicketCategoryId" />
+                                    <input type="hidden" name="SelectedCategories[@i].CategoryName" value="@category.CategoryName" />
+                                    <input type="hidden" name="SelectedCategories[@i].Price" value="@category.Price" />
+                                    <input type="hidden" name="SelectedCategories[@i].AvailableQuantity" value="@category.AvailableQuantity" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-tickets">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>No tickets are currently available for this event.</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Right Column - Customer Info & Summary -->
+                <div class="booking-details">
+                    <!-- Customer Information -->
+                    <div class="customer-info">
+                        <h2><i class="fas fa-user"></i> Your Information</h2>
+
+                        <div class="form-group">
+                            <label asp-for="CustomerEmail">Email Address *</label>
+                            <input asp-for="CustomerEmail" type="email" class="form-control" placeholder="your@email.com" readonly />
+                            <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label asp-for="CustomerFirstName">First Name *</label>
+                                <input asp-for="CustomerFirstName" type="text" class="form-control" />
+                                <span asp-validation-for="CustomerFirstName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="CustomerLastName">Last Name *</label>
+                                <input asp-for="CustomerLastName" type="text" class="form-control" />
+                                <span asp-validation-for="CustomerLastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="CustomerPhone">Phone Number</label>
+                            <input asp-for="CustomerPhone" type="tel" class="form-control" placeholder="+1 (555) 123-4567" />
+                            <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div class="promo-section">
+                        <h3><i class="fas fa-tag"></i> Promo Code</h3>
+                        <div class="promo-input">
+                            <input asp-for="PromoCode" type="text" class="form-control" placeholder="Enter promo code" />
+                            <button type="button" id="apply-promo" class="btn btn-outline">Apply</button>
+                        </div>
+                        <div id="promo-message" class="promo-message"></div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary">
+                        <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+                        <div id="summary-content">
+                            <div class="summary-row">
+                                <span>Total Tickets:</span>
+                                <span id="total-tickets">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row discount-row" id="discount-row" style="display: none;">
+                                <span>Discount:</span>
+                                <span id="discount-amount">-$0.00</span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span>Total:</span>
+                                <span id="final-total">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="selected-tickets" id="selected-tickets" style="display: none;">
+                            <h4>Selected Tickets:</h4>
+                            <div id="tickets-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="terms-section">
+                        <div class="checkbox-group">
+                            <input asp-for="AcceptTerms" type="checkbox" id="accept-terms" />
+                            <label for="accept-terms">
+                                I accept the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a> *
+                            </label>
+                            <span asp-validation-for="AcceptTerms" class="text-danger"></span>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input asp-for="ReceiveUpdates" type="checkbox" id="receive-updates" checked />
+                            <label for="receive-updates">
+                                I would like to receive updates about upcoming events
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Book Now Button -->
+                    <div class="booking-actions">
+                        <button type="submit" id="book-now-btn" class="btn btn-primary btn-large" disabled>
+                            <i class="fas fa-credit-card"></i> Complete Booking
+                        </button>
+                        <div class="security-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Your information is secure and encrypted</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="booking-loader" class="booking-loader" style="display: none;">
+    <div class="loader-content">
+        <div class="spinner"></div>
+        <p>Processing your booking...</p>
+    </div>
+</div>
+
+<style>
+    /* Dark Theme Styles */
+    .booking-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+        color: #e2e8f0;
+    }
+
+    .event-header {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid #475569;
+    }
+
+    .event-image img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #475569;
+    }
+
+    .event-info h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+        color: #f1f5f9;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .event-description {
+        color: #cbd5e1;
+        line-height: 1.6;
+    }
+
+    .event-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #94a3b8;
+    }
+
+        .detail-item i {
+            color: #3b82f6;
+            width: 20px;
+            filter: brightness(1.2);
+        }
+
+    .booking-sections {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .tickets-section, .booking-details {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid #475569;
+    }
+
+        .tickets-section h2, .booking-details h2 {
+            margin-bottom: 25px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+            .tickets-section h2 i, .booking-details h2 i {
+                color: #3b82f6;
+            }
+
+    .ticket-category {
+        border: 2px solid #475569;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #334155 0%, #475569 100%);
+    }
+
+        .ticket-category:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .category-header h3 {
+            margin: 0;
+            color: #f1f5f9;
+        }
+
+    .category-description {
+        color: #cbd5e1;
+        margin-bottom: 15px;
+    }
+
+    .available-count {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #10b981;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .quantity-selector {
+        margin-top: 15px;
+    }
+
+        .quantity-selector label {
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: 2px solid #3b82f6;
+        background: #1e293b;
+        color: #3b82f6;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s ease;
+    }
+
+        .qty-btn:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        padding: 8px;
+        border: 2px solid #475569;
+        border-radius: 8px;
+        font-weight: 600;
+        background: #1e293b;
+        color: #e2e8f0;
+    }
+
+        .quantity-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+    .no-tickets {
+        text-align: center;
+        color: #fbbf24;
+        padding: 40px;
+    }
+
+        .no-tickets i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #475569;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: #1e293b;
+        }
+
+        .form-control[readonly] {
+            background: #374151;
+            color: #9ca3af;
+        }
+
+        .form-control::placeholder {
+            color: #6b7280;
+        }
+
+    .customer-info, .promo-section {
+        margin-bottom: 25px;
+    }
+
+        .promo-section h3 {
+            color: #f1f5f9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .promo-section h3 i {
+                color: #fbbf24;
+            }
+
+    .promo-input {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #3b82f6;
+        border: 2px solid #3b82f6;
+    }
+
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+    .promo-message {
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        display: none;
+        font-weight: 500;
+    }
+
+        .promo-message.success {
+            background: #064e3b;
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .promo-message.error {
+            background: #7f1d1d;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+    .order-summary {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border: 1px solid #374151;
+    }
+
+        .order-summary h3 {
+            color: #f1f5f9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .order-summary h3 i {
+                color: #10b981;
+            }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #374151;
+        color: #cbd5e1;
+    }
+
+    .total-row {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        border-bottom: none;
+        margin-top: 10px;
+        padding-top: 15px;
+        border-top: 2px solid #3b82f6;
+    }
+
+    .discount-row {
+        color: #10b981;
+        font-weight: 600;
+    }
+
+    .selected-tickets {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #374151;
+    }
+
+        .selected-tickets h4 {
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+    .ticket-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        color: #cbd5e1;
+    }
+
+    .terms-section {
+        margin: 25px 0;
+    }
+
+    .checkbox-group {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: #3b82f6;
+        }
+
+        .checkbox-group label {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+            .checkbox-group label a {
+                color: #3b82f6;
+                text-decoration: underline;
+            }
+
+                .checkbox-group label a:hover {
+                    color: #60a5fa;
+                }
+
+    .btn-large {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        }
+
+        .btn-primary:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+
+    .security-info {
+        text-align: center;
+        margin-top: 15px;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+        .security-info i {
+            color: #10b981;
+            margin-right: 5px;
+        }
+
+    .booking-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    }
+
+    .loader-content {
+        text-align: center;
+        color: white;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(59, 130, 246, 0.3);
+        border-top: 3px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* Mobile Responsiveness */
+    @@media (max-width: 768px) {
+        .event-header
+
+    {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .booking-sections {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .promo-input {
+        flex-direction: column;
+    }
+
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initBookingForm();
+    });
+
+    function initBookingForm() {
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        const qtyButtons = document.querySelectorAll('.qty-btn');
+        const applyPromoBtn = document.getElementById('apply-promo');
+        const bookingForm = document.getElementById('booking-form');
+        const bookNowBtn = document.getElementById('book-now-btn');
+        const acceptTerms = document.getElementById('accept-terms');
+
+        // Quantity button handlers
+        qtyButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const isPlus = this.classList.contains('plus');
+                const currentValue = parseInt(input.value) || 0;
+                const maxValue = parseInt(input.getAttribute('max'));
+
+                if (isPlus && currentValue < maxValue) {
+                    input.value = currentValue + 1;
+                } else if (!isPlus && currentValue > 0) {
+                    input.value = currentValue - 1;
+                }
+
+                updateOrderSummary();
+            });
+        });
+
+        // Quantity input change handlers
+        quantityInputs.forEach(input => {
+            input.addEventListener('input', updateOrderSummary);
+        });
+
+        // Terms checkbox handler
+        acceptTerms.addEventListener('change', function() {
+            updateBookButtonState();
+        });
+
+        // Promo code handler
+        if (applyPromoBtn) {
+            applyPromoBtn.addEventListener('click', applyPromoCode);
+        }
+
+        // Form submission handler
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateForm()) {
+                showBookingLoader();
+                this.submit();
+            }
+        });
+
+        // Initial update
+        updateOrderSummary();
+    }
+
+    function updateOrderSummary() {
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        let totalTickets = 0;
+        let subtotal = 0;
+        const ticketsList = [];
+
+        quantityInputs.forEach(input => {
+            const quantity = parseInt(input.value) || 0;
+            const price = parseFloat(input.getAttribute('data-price'));
+            const categoryName = input.closest('.ticket-category').querySelector('h3').textContent;
+
+            if (quantity > 0) {
+                totalTickets += quantity;
+                subtotal += quantity * price;
+                ticketsList.push({
+                    name: categoryName,
+                    quantity: quantity,
+                    price: price,
+                    total: quantity * price
+                });
+            }
+        });
+
+        // Update summary display
+        document.getElementById('total-tickets').textContent = totalTickets;
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+
+        // Update final total (accounting for any applied discount)
+        const discountAmount = parseFloat(document.getElementById('discount-amount').textContent.replace(/[^0-9.-]/g, '')) || 0;
+        const finalTotal = subtotal - discountAmount;
+        document.getElementById('final-total').textContent = `$${finalTotal.toFixed(2)}`;
+
+        // Update selected tickets list
+        const selectedTicketsDiv = document.getElementById('selected-tickets');
+        const ticketsListDiv = document.getElementById('tickets-list');
+
+        if (ticketsList.length > 0) {
+            selectedTicketsDiv.style.display = 'block';
+            ticketsListDiv.innerHTML = ticketsList.map(ticket =>
+                `<div class="ticket-item">
+                    <span>${ticket.quantity}x ${ticket.name}</span>
+                    <span>$${ticket.total.toFixed(2)}</span>
+                </div>`
+            ).join('');
+        } else {
+            selectedTicketsDiv.style.display = 'none';
+        }
+
+        updateBookButtonState();
+    }
+
+    function updateBookButtonState() {
+        const bookNowBtn = document.getElementById('book-now-btn');
+        const acceptTerms = document.getElementById('accept-terms');
+        const totalTickets = parseInt(document.getElementById('total-tickets').textContent);
+
+        const isValid = totalTickets > 0 && acceptTerms.checked;
+        bookNowBtn.disabled = !isValid;
+    }
+
+    async function applyPromoCode() {
+        const promoInput = document.querySelector('input[name="PromoCode"]');
+        const promoMessage = document.getElementById('promo-message');
+        const applyBtn = document.getElementById('apply-promo');
+        const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace('$', ''));
+
+        if (!promoInput.value.trim()) {
+            showPromoMessage('Please enter a promo code', 'error');
+            return;
+        }
+
+        applyBtn.disabled = true;
+        applyBtn.textContent = 'Applying...';
+
+        try {
+            const response = await fetch('@Url.Action("ValidatePromoCode", "Booking")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `promoCode=${encodeURIComponent(promoInput.value)}&totalAmount=${subtotal}`
+            });
+
+            const data = await response.json();
+
+            if (data.valid) {
+                // Apply discount
+                document.getElementById('discount-amount').textContent = `-$${data.discountAmount.toFixed(2)}`;
+                document.getElementById('final-total').textContent = `$${data.finalAmount.toFixed(2)}`;
+                document.getElementById('discount-row').style.display = 'flex';
+
+                showPromoMessage(data.message, 'success');
+                applyBtn.textContent = 'Applied';
+                applyBtn.disabled = true;
+            } else {
+                showPromoMessage(data.message, 'error');
+                applyBtn.textContent = 'Apply';
+                applyBtn.disabled = false;
+            }
+        } catch (error) {
+            showPromoMessage('Error applying promo code', 'error');
+            applyBtn.textContent = 'Apply';
+            applyBtn.disabled = false;
+        }
+    }
+
+    function showPromoMessage(message, type) {
+        const promoMessage = document.getElementById('promo-message');
+        promoMessage.textContent = message;
+        promoMessage.className = `promo-message ${type}`;
+        promoMessage.style.display = 'block';
+
+        if (type === 'error') {
+            setTimeout(() => {
+                promoMessage.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    function validateForm() {
+        const totalTickets = parseInt(document.getElementById('total-tickets').textContent);
+        const acceptTerms = document.getElementById('accept-terms');
+
+        if (totalTickets === 0) {
+            alert('Please select at least one ticket.');
+            return false;
+        }
+
+        if (!acceptTerms.checked) {
+            alert('Please accept the terms and conditions.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function showBookingLoader() {
+        document.getElementById('booking-loader').style.display = 'flex';
+    }
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

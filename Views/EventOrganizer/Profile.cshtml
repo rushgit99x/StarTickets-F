@@ -1,0 +1,394 @@
+﻿@model StarTickets.Models.ViewModels.EventOrganizerProfileViewModel
+@{
+    ViewData["Title"] = "Profile Settings";
+}
+
+<style>
+    :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --bg-card: #1e1e1e;
+        --bg-input: #2a2a2a;
+        --border-color: #333333;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --accent-primary: #6366f1;
+        --accent-hover: #5855eb;
+        --success-color: #10b981;
+        --error-color: #ef4444;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a2e 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .profile-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-header i {
+            font-size: 2.2rem;
+            color: var(--accent-primary);
+            -webkit-text-fill-color: var(--accent-primary);
+        }
+
+    .success-alert {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--success-color);
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .profile-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+        color: white;
+        padding: 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: var(--bg-input);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-control::placeholder {
+            color: #6b7280;
+        }
+
+    .text-danger {
+        color: var(--error-color);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow);
+    }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+    .stats-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+        .stat-value.revenue {
+            color: var(--success-color);
+        }
+
+        .stat-value.count {
+            color: var(--accent-primary);
+        }
+
+    @@media (max-width: 768px) {
+        .profile-grid
+
+    {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .profile-header h2 {
+        font-size: 2rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-container {
+        padding: 1rem;
+    }
+
+    }
+
+    .floating-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+        .floating-shapes::before,
+        .floating-shapes::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .floating-shapes::before {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -150px;
+            animation-delay: -10s;
+        }
+
+        .floating-shapes::after {
+            width: 200px;
+            height: 200px;
+            bottom: -100px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+    @@keyframes float {
+        0%, 100%
+
+    {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+
+    }
+</style>
+
+<div class="floating-shapes"></div>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2><i class="fas fa-user-circle"></i> Profile Settings</h2>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="profile-grid">
+        <div class="profile-card">
+            <div class="card-header">
+                <i class="fas fa-edit"></i> Update Profile
+            </div>
+            <div class="card-body">
+                <form asp-action="Profile" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="UserId" />
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="form-label">First Name</label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Enter your first name" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LastName" class="form-label">Last Name</label>
+                            <input asp-for="LastName" class="form-control" placeholder="Enter your last name" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Enter your phone number" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                            <input asp-for="DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> Account Overview
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">
+                            <i class="fas fa-calendar-alt"></i> Member Since
+                        </span>
+                        <span class="stat-value">@Model.MemberSince.ToString("MMM yyyy")</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label">
+                            <i class="fas fa-calendar-check"></i> Total Events
+                        </span>
+                        <span class="stat-value count">@Model.TotalEventsOrganized</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label">
+                            <i class="fas fa-ticket-alt"></i> Tickets Sold
+                        </span>
+                        <span class="stat-value count">@Model.TotalTicketsSold.ToString("N0")</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label">
+                            <i class="fas fa-dollar-sign"></i> Total Revenue
+                        </span>
+                        <span class="stat-value revenue">@Model.TotalRevenue.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

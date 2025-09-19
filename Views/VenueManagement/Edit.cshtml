@@ -1,0 +1,220 @@
+﻿@model StarTickets.Models.ViewModels.EditVenueViewModel
+@{
+    ViewData["Title"] = "Edit Venue";
+    ViewBag.PageDescription = "Update venue information";
+    Layout = "~/Views/Shared/CustomLayouts/_EventManagement.cshtml";
+}
+
+<div class="edit-venue-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-left">
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Venues
+            </a>
+            <a href="@Url.Action("Details", new { id = Model.VenueId })" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+        </div>
+        <div class="action-bar-right">
+            <div class="venue-id-info">
+                <small class="text-muted">Venue ID: @Model.VenueId</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Venue Form -->
+    <form asp-action="Edit" method="post" id="editVenueForm" class="edit-venue-form">
+        @Html.AntiForgeryToken()
+        <input asp-for="VenueId" type="hidden" />
+
+        <!-- Basic Information -->
+        <div class="form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-building"></i> Basic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label asp-for="VenueName" class="form-label required">Venue Name</label>
+                            <input asp-for="VenueName" class="form-control" placeholder="Enter venue name" />
+                            <span asp-validation-for="VenueName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Capacity" class="form-label required">Capacity</label>
+                            <input asp-for="Capacity" class="form-control" type="number" min="1" placeholder="Enter capacity" />
+                            <span asp-validation-for="Capacity" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Current events may be affected if capacity is reduced significantly
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label required">Address</label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Enter full address"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="City" class="form-label required">City</label>
+                            <input asp-for="City" class="form-control" placeholder="Enter city" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="State" class="form-label">State/Province</label>
+                            <input asp-for="State" class="form-control" placeholder="Enter state or province" />
+                            <span asp-validation-for="State" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Country" class="form-label required">Country</label>
+                            <input asp-for="Country" class="form-control" placeholder="Enter country" />
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="PostalCode" class="form-label">Postal Code</label>
+                            <input asp-for="PostalCode" class="form-control" placeholder="Enter postal code" />
+                            <span asp-validation-for="PostalCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facilities & Amenities -->
+        <div class="form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Facilities & Amenities</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label asp-for="Facilities" class="form-label">Facilities</label>
+                    <textarea asp-for="Facilities" class="form-control" rows="4"
+                              placeholder="List venue facilities (parking, accessibility, sound system, etc.)"></textarea>
+                    <small class="form-text text-muted">
+                        Describe the facilities available at this venue (optional)
+                    </small>
+                    <span asp-validation-for="Facilities" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-phone"></i> Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="ContactEmail" class="form-label">Contact Email</label>
+                            <input asp-for="ContactEmail" type="email" class="form-control" placeholder="venue@example.com" />
+                            <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="ContactPhone" class="form-label">Contact Phone</label>
+                            <input asp-for="ContactPhone" type="tel" class="form-control" placeholder="+1 (555) 123-4567" />
+                            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Settings -->
+        <div class="form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-toggle-on"></i> Status Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsActive" class="form-check-label">
+                        Active
+                    </label>
+                    <small class="form-text text-muted d-block">
+                        Inactive venues cannot be used for new events
+                    </small>
+                </div>
+                @if (!Model.IsActive)
+                {
+                    <div class="alert alert-warning mt-3" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> This venue is currently inactive and cannot be selected for new events.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <a href="@Url.Action("Details", new { id = Model.VenueId })" class="btn btn-outline-info">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Venue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize form validation
+            initializeEditVenueValidation();
+
+            // Format phone number input
+            $('#ContactPhone').on('input', function () {
+                formatPhoneNumber($(this));
+            });
+
+            // Auto-capitalize city and country
+            $('#City, #Country, #State').on('input', function () {
+                capitalizeInput($(this));
+            });
+
+            // Show confirmation if deactivating venue with events
+            $('#IsActive').on('change', function () {
+                if (!$(this).is(':checked')) {
+                    if (confirm('Are you sure you want to deactivate this venue? It will not be available for new events.')) {
+                        // Continue with deactivation
+                    } else {
+                        $(this).prop('checked', true);
+                    }
+                }
+            });
+        });
+    </script>
+}

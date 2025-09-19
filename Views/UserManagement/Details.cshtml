@@ -1,0 +1,479 @@
+﻿@model StarTickets.Models.ViewModels.UserDetailsViewModel
+@{
+    ViewData["Title"] = "User Details";
+    Layout = "~/Views/Shared/CustomLayouts/_AdminDashboard.cshtml";
+}
+
+<div class="user-details-container">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-user"></i>
+                User Details
+            </h1>
+            <p class="page-subtitle">Complete user information and activity overview</p>
+        </div>
+
+        <div class="page-actions">
+            <a href="@Url.Action("Edit", new { id = Model.User.UserId })" class="btn btn-primary">
+                <i class="fas fa-edit"></i>
+                Edit User
+            </a>
+            <button type="button" class="btn btn-warning" onclick="toggleUserStatus(@Model.User.UserId, @Model.User.IsActive.ToString().ToLower())">
+                <i class="fas fa-@(Model.User.IsActive ? "ban" : "check")"></i>
+                @(Model.User.IsActive ? "Deactivate" : "Activate")
+            </button>
+            <button type="button" class="btn btn-info" onclick="showResetPasswordModal(@Model.User.UserId, '@Model.User.FullName')">
+                <i class="fas fa-key"></i>
+                Reset Password
+            </button>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="details-content">
+        <div class="row">
+            <!-- User Profile Card -->
+            <div class="col-md-4">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            @Model.User.FirstName.Substring(0, 1)@Model.User.LastName.Substring(0, 1)
+                        </div>
+                        <h3 class="profile-name">@Model.User.FullName</h3>
+                        <p class="profile-email">@Model.User.Email</p>
+                        <div class="profile-badges">
+                            <span class="role-badge role-@Model.User.Role">
+                                @(Model.User.UserRole?.RoleName ?? "Unknown")
+                            </span>
+                            <span class="status-badge @(Model.User.IsActive ? "status-active" : "status-inactive")">
+                                @(Model.User.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Loyalty Points</div>
+                            <div class="stat-value">@Model.User.LoyaltyPoints.ToString("N0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Bookings</div>
+                            <div class="stat-value">@Model.BookingStats.TotalBookings</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Spent</div>
+                            <div class="stat-value">$@Model.BookingStats.TotalSpent.ToString("N2")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="quick-actions-card">
+                    <h4>Quick Actions</h4>
+                    <div class="action-list">
+                        <button type="button" class="action-btn" onclick="sendWelcomeEmail(@Model.User.UserId)">
+                            <i class="fas fa-envelope"></i>
+                            Send Welcome Email
+                        </button>
+                        <button type="button" class="action-btn" onclick="viewUserActivity(@Model.User.UserId)">
+                            <i class="fas fa-history"></i>
+                            View Activity Log
+                        </button>
+                        @if (!Model.User.EmailConfirmed)
+                        {
+                            <button type="button" class="action-btn" onclick="confirmUserEmail(@Model.User.UserId)">
+                                <i class="fas fa-check-circle"></i>
+                                Confirm Email
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Information Tabs -->
+            <div class="col-md-8">
+                <div class="info-tabs">
+                    <nav class="tab-nav">
+                        <button class="tab-btn active" data-tab="personal">
+                            <i class="fas fa-user"></i>
+                            Personal Info
+                        </button>
+                        <button class="tab-btn" data-tab="account">
+                            <i class="fas fa-cog"></i>
+                            Account Settings
+                        </button>
+                        <button class="tab-btn" data-tab="bookings">
+                            <i class="fas fa-ticket-alt"></i>
+                            Booking History
+                        </button>
+                        <button class="tab-btn" data-tab="activity">
+                            <i class="fas fa-chart-line"></i>
+                            Activity
+                        </button>
+                    </nav>
+
+                    <div class="tab-content">
+                        <!-- Personal Information Tab -->
+                        <div class="tab-pane active" id="personal-tab">
+                            <div class="info-section">
+                                <h4>Personal Information</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>First Name</label>
+                                        <value>@Model.User.FirstName</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Last Name</label>
+                                        <value>@Model.User.LastName</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Email Address</label>
+                                        <value>
+                                            @Model.User.Email
+                                            @if (Model.User.EmailConfirmed)
+                                            {
+                                                <i class="fas fa-check-circle text-success" title="Email Confirmed"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-exclamation-circle text-warning" title="Email Not Confirmed"></i>
+                                            }
+                                        </value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Phone Number</label>
+                                        <value>@(!string.IsNullOrEmpty(Model.User.PhoneNumber) ? Model.User.PhoneNumber : "Not provided")</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Date of Birth</label>
+                                        <value>@(Model.User.DateOfBirth?.ToString("MMMM dd, yyyy") ?? "Not provided")</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Age</label>
+                                        <value>
+                                            @if (Model.User.DateOfBirth.HasValue)
+                                            {
+                                                @((DateTime.Now.Year - Model.User.DateOfBirth.Value.Year).ToString() + " years")
+                                            }
+                                            else
+                                            {
+                                                @("Not provided")
+                                            }
+                                        </value>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Settings Tab -->
+                        <div class="tab-pane" id="account-tab">
+                            <div class="info-section">
+                                <h4>Account Settings</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>User ID</label>
+                                        <value>@Model.User.UserId</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Role</label>
+                                        <value>
+                                            <span class="role-badge role-@Model.User.Role">
+                                                @(Model.User.UserRole?.RoleName ?? "Unknown")
+                                            </span>
+                                        </value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Account Status</label>
+                                        <value>
+                                            <span class="status-badge @(Model.User.IsActive ? "status-active" : "status-inactive")">
+                                                @(Model.User.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Email Confirmed</label>
+                                        <value>
+                                            @if (Model.User.EmailConfirmed)
+                                            {
+                                                <span class="text-success"><i class="fas fa-check"></i> Confirmed</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-warning"><i class="fas fa-clock"></i> Pending</span>
+                                            }
+                                        </value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Loyalty Points</label>
+                                        <value class="loyalty-points">@Model.User.LoyaltyPoints.ToString("N0") points</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Member Since</label>
+                                        <value>@Model.User.CreatedAt?.ToString("MMMM dd, yyyy")</value>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Last Updated</label>
+                                        <value>@Model.User.UpdatedAt?.ToString("MMMM dd, yyyy HH:mm")</value>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking History Tab -->
+                        <div class="tab-pane" id="bookings-tab">
+                            <div class="info-section">
+                                <h4>Booking Statistics</h4>
+                                <div class="booking-stats">
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-number">@Model.BookingStats.TotalBookings</div>
+                                            <div class="stat-label">Total Bookings</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-number">$@Model.BookingStats.TotalSpent.ToString("N2")</div>
+                                            <div class="stat-label">Total Spent</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-number">@Model.BookingStats.EventsAttended</div>
+                                            <div class="stat-label">Events Attended</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="booking-details">
+                                    <div class="detail-item">
+                                        <label>Last Booking</label>
+                                        <value>@(Model.BookingStats.LastBookingDate?.ToString("MMMM dd, yyyy") ?? "No bookings yet")</value>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Favorite Category</label>
+                                        <value>@Model.BookingStats.FavoriteEventCategory</value>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Cancelled Bookings</label>
+                                        <value>@Model.BookingStats.CancelledBookings</value>
+                                    </div>
+                                </div>
+
+                                <div class="booking-list">
+                                    <p class="text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Detailed booking history will be available once the booking system is implemented.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Tab -->
+                        <div class="tab-pane" id="activity-tab">
+                            <div class="info-section">
+                                <h4>Recent Activity</h4>
+                                <div class="activity-timeline" id="activityTimeline">
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-success">
+                                            <i class="fas fa-user-plus"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Account Created</div>
+                                            <div class="activity-time">@Model.User.CreatedAt?.ToString("MMMM dd, yyyy HH:mm")</div>
+                                        </div>
+                                    </div>
+
+                                    @if (Model.User.UpdatedAt > Model.User.CreatedAt)
+                                    {
+                                        <div class="activity-item">
+                                            <div class="activity-icon bg-info">
+                                                <i class="fas fa-edit"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <div class="activity-title">Profile Updated</div>
+                                                <div class="activity-time">@Model.User.UpdatedAt?.ToString("MMMM dd, yyyy HH:mm")</div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <div class="activity-placeholder">
+                                        <p class="text-muted">
+                                            <i class="fas fa-info-circle"></i>
+                                            Additional activity logs will be displayed here once the activity logging system is implemented.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Reset password for <strong id="resetUserName"></strong>?</p>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" minlength="6" required>
+                    <small class="form-text text-muted">Minimum 6 characters required</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-details.css" />
+}
+
+@section Scripts {
+    <script>
+        let currentResetUserId = null;
+
+        $(document).ready(function() {
+            // Tab switching functionality
+            $('.tab-btn').click(function() {
+                const tabId = $(this).data('tab');
+
+                // Update tab buttons
+                $('.tab-btn').removeClass('active');
+                $(this).addClass('active');
+
+                // Update tab content
+                $('.tab-pane').removeClass('active');
+                $('#' + tabId + '-tab').addClass('active');
+            });
+        });
+
+        function toggleUserStatus(userId, currentStatus) {
+            const action = currentStatus ? 'deactivate' : 'activate';
+
+            if(!confirm(`Are you sure you want to ${action} this user?`)) {
+                return;
+            }
+
+            $.post('@Url.Action("ToggleStatus")', {
+                id: userId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if(response.success) {
+                    showNotification(response.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showNotification('An error occurred while updating user status.', 'error');
+            });
+        }
+
+        function showResetPasswordModal(userId, userName) {
+            currentResetUserId = userId;
+            $('#resetUserName').text(userName);
+            $('#newPassword').val('');
+            $('#resetPasswordModal').modal('show');
+        }
+
+        function resetPassword() {
+            const newPassword = $('#newPassword').val();
+
+            if(!newPassword || newPassword.length < 6) {
+                showNotification('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            $.post('@Url.Action("ResetPassword")', {
+                id: currentResetUserId,
+                newPassword: newPassword,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if(response.success) {
+                    showNotification(response.message, 'success');
+                    $('#resetPasswordModal').modal('hide');
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showNotification('An error occurred while resetting password.', 'error');
+            });
+        }
+
+        function sendWelcomeEmail(userId) {
+            if(!confirm('Send welcome email to this user?')) {
+                return;
+            }
+
+            // This would call an endpoint to send welcome email
+            showNotification('Welcome email functionality will be implemented with the email system.', 'info');
+        }
+
+        function confirmUserEmail(userId) {
+            if(!confirm('Mark this user\'s email as confirmed?')) {
+                return;
+            }
+
+            // This would call an endpoint to confirm email
+            showNotification('Email confirmation functionality will be implemented.', 'info');
+        }
+
+        function viewUserActivity(userId) {
+            // This would show detailed user activity
+            showNotification('Detailed activity logs will be available once the logging system is implemented.', 'info');
+        }
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' :
+                              type === 'error' ? 'alert-danger' :
+                              type === 'warning' ? 'alert-warning' : 'alert-info';
+
+            const icon = type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${icon}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            $('.user-details-container').prepend(alertHtml);
+
+            setTimeout(() => {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+    </script>
+}

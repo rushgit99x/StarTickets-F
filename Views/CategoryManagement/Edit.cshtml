@@ -1,0 +1,220 @@
+﻿@model StarTickets.Models.ViewModels.EditCategoryViewModel
+@{
+    ViewData["Title"] = "Edit Category";
+    ViewBag.PageDescription = "Update category information";
+    Layout = "~/Views/Shared/CustomLayouts/_CategoryManagement.cshtml";
+}
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb-nav">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index")"><i class="fas fa-tags"></i> Categories</a>
+        </li>
+        <li class="breadcrumb-item active">Edit Category</li>
+    </ol>
+</nav>
+
+<!-- Edit Form -->
+<div class="form-container">
+    <div class="form-header">
+        <h4><i class="fas fa-edit"></i> Edit Category</h4>
+        <p class="text-muted">Update the category information</p>
+    </div>
+
+    <form asp-action="Edit" method="post" class="category-form">
+        @Html.AntiForgeryToken()
+        <input asp-for="CategoryId" type="hidden" />
+
+        <div class="form-section">
+            <h5>Category Information</h5>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label asp-for="CategoryName" class="form-label required">
+                            <i class="fas fa-tag"></i> Category Name
+                        </label>
+                        <input asp-for="CategoryName" class="form-control" placeholder="e.g., Concert, Theatre, Sports" maxlength="100" />
+                        <span asp-validation-for="CategoryName" class="text-danger"></span>
+                        <small class="form-text text-muted">Enter a unique name for this category</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Description" class="form-label">
+                            <i class="fas fa-align-left"></i> Description
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Describe what types of events belong to this category..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                        <small class="form-text text-muted">Optional: Provide a description to help users understand this category</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="action-buttons">
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <a href="@Url.Action("Details", new { id = Model.CategoryId })" class="btn btn-outline-info">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Category
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Preview Section -->
+<div class="preview-section">
+    <h5><i class="fas fa-eye"></i> Preview</h5>
+    <div class="category-preview">
+        <div class="preview-card">
+            <div class="category-icon">
+                <i class="fas fa-tag"></i>
+            </div>
+            <div class="category-details">
+                <h6 id="previewName">@Model.CategoryName</h6>
+                <p id="previewDescription" class="text-muted">@(!string.IsNullOrEmpty(Model.Description) ? Model.Description : "Category description will appear here...")</p>
+                <small class="text-muted">Last updated: @DateTime.Now.ToString("MMM dd, yyyy")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change History (if applicable) -->
+<div class="history-section">
+    <h5><i class="fas fa-history"></i> Recent Changes</h5>
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        You are editing an existing category. Any changes will be saved immediately upon submission.
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Store original values
+            var originalName = $('#CategoryName').val();
+            var originalDescription = $('#Description').val();
+
+            // Live preview functionality
+            $('#CategoryName').on('input', function() {
+                var name = $(this).val() || 'Category Name';
+                $('#previewName').text(name);
+                checkForChanges();
+            });
+
+            $('#Description').on('input', function() {
+                var description = $(this).val() || 'Category description will appear here...';
+                $('#previewDescription').text(description);
+                checkForChanges();
+            });
+
+            // Form validation
+            $('.category-form').on('submit', function(e) {
+                var categoryName = $('#CategoryName').val().trim();
+
+                if (!categoryName) {
+                    e.preventDefault();
+                    $('#CategoryName').focus();
+                    showNotification('error', 'Category name is required');
+                    return false;
+                }
+
+                if (categoryName.length > 100) {
+                    e.preventDefault();
+                    $('#CategoryName').focus();
+                    showNotification('error', 'Category name cannot exceed 100 characters');
+                    return false;
+                }
+
+                // Check if any changes were made
+                if (categoryName === originalName && $('#Description').val() === originalDescription) {
+                    e.preventDefault();
+                    showNotification('warning', 'No changes detected. Please make some changes before saving.');
+                    return false;
+                }
+
+                // Show loading state
+                $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+            });
+
+            // Character counter for category name
+            $('#CategoryName').on('input', function() {
+                var current = $(this).val().length;
+                var max = 100;
+                var remaining = max - current;
+
+                if (!$('.char-counter').length) {
+                    $(this).after('<small class="form-text text-muted char-counter"></small>');
+                }
+
+                $('.char-counter').text(remaining + ' characters remaining');
+
+                if (remaining < 10) {
+                    $('.char-counter').removeClass('text-muted').addClass('text-warning');
+                } else {
+                    $('.char-counter').removeClass('text-warning').addClass('text-muted');
+                }
+            });
+
+            // Warn about unsaved changes
+            var hasUnsavedChanges = false;
+
+            $(window).on('beforeunload', function() {
+                if (hasUnsavedChanges) {
+                    return 'You have unsaved changes. Are you sure you want to leave this page?';
+                }
+            });
+
+            // Remove warning when form is submitted
+            $('.category-form').on('submit', function() {
+                hasUnsavedChanges = false;
+            });
+
+            function checkForChanges() {
+                var currentName = $('#CategoryName').val();
+                var currentDescription = $('#Description').val();
+
+                hasUnsavedChanges = (currentName !== originalName || currentDescription !== originalDescription);
+
+                // Update the update button state
+                if (hasUnsavedChanges) {
+                    $('button[type="submit"]').removeClass('btn-primary').addClass('btn-warning');
+                    $('button[type="submit"]').html('<i class="fas fa-save"></i> Save Changes');
+                } else {
+                    $('button[type="submit"]').removeClass('btn-warning').addClass('btn-primary');
+                    $('button[type="submit"]').html('<i class="fas fa-save"></i> Update Category');
+                }
+            }
+
+            // Initialize character counter
+            $('#CategoryName').trigger('input');
+        });
+
+        function showNotification(type, message) {
+            var alertClass = type === 'error' ? 'alert-danger' : (type === 'warning' ? 'alert-warning' : 'alert-success');
+            var icon = type === 'error' ? 'fa-exclamation-circle' : (type === 'warning' ? 'fa-exclamation-triangle' : 'fa-check-circle');
+
+            var notification = $('<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">')
+                .html('<i class="fas ' + icon + ' me-2"></i>' + message +
+                     '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>');
+
+            $('.content-body').prepend(notification);
+
+            setTimeout(function() {
+                notification.alert('close');
+            }, 5000);
+        }
+    </script>
+}

@@ -1,0 +1,544 @@
+﻿@model StarTickets.Models.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Home Page - StarTickets";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/Home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>StarTickets</span>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="@Url.Action("Index", "Home")" class="nav-link active">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#featured-events" class="nav-link">Events</a>
+                    </li>
+                    @* <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">Categories <i class="fas fa-chevron-down"></i></a>
+                        <ul class="dropdown-menu">
+                            @foreach (var category in Model.Categories)
+                            {
+                                <li>
+                                    <a href="#" data-category="@category.CategoryId">
+                                        <i class="fas fa-@(GetCategoryIcon(category.CategoryName))"></i> @category.CategoryName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li> *@
+                    <li class="nav-item dropdown">
+                        <a href="#"
+                           class="nav-link dropdown-toggle"
+                           id="categoriesDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Categories <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                            @foreach (var category in Model.Categories)
+                            {
+                                <li>
+                                    <a class="dropdown-item" href="#" data-category="@category.CategoryId">
+                                        <i class="fas fa-@(GetCategoryIcon(category.CategoryName))"></i>
+                                        @category.CategoryName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        @* <a href="#" class="nav-link">About</a> *@
+                        <a href="@Url.Action("About", "Home")" class="nav-link ">About</a>
+                    </li>
+                    <li class="nav-item me-3">
+                        @* <a href="#" class="nav-link">Contact</a> *@
+                        <a href="@Url.Action("Contact", "Home")" class="nav-link ">Contact</a>
+                    </li>
+                </ul>
+
+                <div class="nav-search me-4">
+                    <input type="text" id="nav-search-input" placeholder="Search events, artists, venues..." class="search-input">
+                    <button class="search-btn" id="nav-search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="nav-actions">
+                    @if (Model.IsAuthenticated)
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-outline dropdown-toggle" type="button" id="userMenuButton"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> My Account
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="userMenuButton">
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Customer")">Dashboard</a></li>
+                                @* <li><a class="dropdown-item" href="#">My Bookings</a></li>
+                                <li><a class="dropdown-item" href="#">Profile</a></li> *@
+                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Auth")">Logout</a></li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline" onclick="window.location.href='@Url.Action("Login", "Auth")'">Login</button>
+                        <button class="btn btn-primary" onclick="window.location.href='@Url.Action("Register", "Auth")'">Sign Up</button>
+                    }
+
+                </div>
+
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-slider">
+            <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1920&h=800&fit=crop');">
+                <div class="hero-content">
+                    <h1>Discover Amazing Events</h1>
+                    <p>Find and book tickets for concerts, shows, sports, and more</p>
+                    @* <div class="hero-search">
+                        <input type="text" id="hero-search-query" placeholder="Event name or artist">
+                        <select id="hero-search-location">
+                            <option value="">All Locations</option>
+                            <option value="Colombo">Colombo</option>
+                            <option value="Galle">Galle</option>
+                            <option value="Kandy">Kandy</option>
+                        </select>
+                        <select id="hero-search-category">
+                            <option value="">All Categories</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.CategoryId">@category.CategoryName</option>
+                            }
+                        </select>
+                        <input type="date" id="hero-search-date">
+                        <button class="btn btn-primary" id="hero-search-btn">Search Events</button>
+                    </div> *@
+                </div>
+            </div>
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920&h=800&fit=crop');">
+                <div class="hero-content">
+                    <h1>Live Music Experiences</h1>
+                    <p>Get closer to your favorite artists with premium tickets</p>
+                    <button class="btn btn-primary" onclick="filterByCategory('Concert')">Browse Concerts</button>
+                </div>
+            </div>
+        </div>
+        <div class="hero-nav">
+            <button class="hero-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="hero-next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="hero-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+    <section>
+        <div class="hero-search">
+            <input type="text" id="hero-search-query" placeholder="Event name or artist">
+            <select id="hero-search-location">
+                <option value="">All Locations</option>
+                @foreach (var venue in Model.Venues.GroupBy(v => v.City).OrderBy(g => g.Key))
+                {
+                    <option value="@venue.Key">@venue.Key</option>
+                }
+            </select>
+            <select id="hero-search-category">
+                <option value="">All Categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.CategoryId">@category.CategoryName</option>
+                }
+            </select>
+            <input type="date" id="hero-search-date">
+            <button class="btn btn-primary" id="hero-search-btn">Search Events</button>
+        </div>
+    </section>
+    <!-- Quick Categories -->
+    <section class="categories">
+        <div class="container">
+            <h2>Browse by Category</h2>
+            <div class="categories-grid">
+                @foreach (var category in Model.Categories)
+                {
+                    <div class="category-card" data-category-id="@category.CategoryId">
+                        <i class="fas fa-@(GetCategoryIcon(category.CategoryName))"></i>
+                        <h3>@category.CategoryName</h3>
+                        <p>@(category.Description ?? GetCategoryDescription(category.CategoryName))</p>
+                        <span class="event-count">@(category.Events?.Count ?? 0) events</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Upcoming Events -->
+    <section class="featured-events" id="upcoming-events">
+        <div class="container">
+            <div class="section-header">
+                <h2>Upcoming Events</h2>
+                <div class="event-tabs">
+                    <button class="tab-btn upcoming-tab-btn active" data-upcoming-tab="week">This Week</button>
+                    <button class="tab-btn upcoming-tab-btn" data-upcoming-tab="this-month">This Month</button>
+                    <button class="tab-btn upcoming-tab-btn" data-upcoming-tab="next-month">Next Month</button>
+                </div>
+            </div>
+
+            <!-- This Week Grid -->
+            <div class="events-grid upcoming-grid" id="upcoming-week-grid">
+                @foreach (var eventItem in Model.ThisWeekEvents)
+                {
+                    <div class="event-card" data-event-id="@eventItem.EventId">
+                        <div class="event-image">
+                            <img src="@(eventItem.ImageUrl ?? "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop")"
+                                 alt="@eventItem.EventName">
+                            <div class="event-date">
+                                <span class="day">@eventItem.EventDate.Day</span>
+                                <span class="month">@eventItem.EventDate.ToString("MMM").ToUpper()</span>
+                            </div>
+                            <div class="event-category">@eventItem.Category?.CategoryName</div>
+                        </div>
+                        <div class="event-info">
+                            <h3>@eventItem.EventName</h3>
+                            <p class="event-venue">
+                                <i class="fas fa-map-marker-alt"></i> @eventItem.Venue?.VenueName, @eventItem.Venue?.City
+                            </p>
+                            <p class="event-time">
+                                <i class="fas fa-clock"></i> @eventItem.EventDate.ToString("hh:mm tt")
+                            </p>
+                            <div class="event-price">
+                                <span class="price">From $@(eventItem.TicketCategories?.Min(tc => tc.Price) ?? 0)</span>
+                                <button class="btn btn-primary book-now-btn"
+                                        data-event-id="@eventItem.EventId"
+                                        data-event-name="@eventItem.EventName">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.ThisWeekEvents.Any())
+                {
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No events this week</h3>
+                        <p>Check back soon for new events!</p>
+                    </div>
+                }
+            </div>
+
+            <!-- This Month Grid -->
+            <div class="events-grid upcoming-grid" id="upcoming-thismonth-grid" style="display:none;">
+                @foreach (var eventItem in Model.ThisMonthEvents)
+                {
+                    <div class="event-card" data-event-id="@eventItem.EventId">
+                        <div class="event-image">
+                            <img src="@(eventItem.ImageUrl ?? "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop")"
+                                 alt="@eventItem.EventName">
+                            <div class="event-date">
+                                <span class="day">@eventItem.EventDate.Day</span>
+                                <span class="month">@eventItem.EventDate.ToString("MMM").ToUpper()</span>
+                            </div>
+                            <div class="event-category">@eventItem.Category?.CategoryName</div>
+                        </div>
+                        <div class="event-info">
+                            <h3>@eventItem.EventName</h3>
+                            <p class="event-venue">
+                                <i class="fas fa-map-marker-alt"></i> @eventItem.Venue?.VenueName, @eventItem.Venue?.City
+                            </p>
+                            <p class="event-time">
+                                <i class="fas fa-clock"></i> @eventItem.EventDate.ToString("hh:mm tt")
+                            </p>
+                            <div class="event-price">
+                                <span class="price">From $@(eventItem.TicketCategories?.Min(tc => tc.Price) ?? 0)</span>
+                                <button class="btn btn-primary book-now-btn"
+                                        data-event-id="@eventItem.EventId"
+                                        data-event-name="@eventItem.EventName">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.ThisMonthEvents.Any())
+                {
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No events this month</h3>
+                        <p>Check back soon for new events!</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Next Month Grid -->
+            <div class="events-grid upcoming-grid" id="upcoming-nextmonth-grid" style="display:none;">
+                @foreach (var eventItem in Model.NextMonthEvents)
+                {
+                    <div class="event-card" data-event-id="@eventItem.EventId">
+                        <div class="event-image">
+                            <img src="@(eventItem.ImageUrl ?? "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop")"
+                                 alt="@eventItem.EventName">
+                            <div class="event-date">
+                                <span class="day">@eventItem.EventDate.Day</span>
+                                <span class="month">@eventItem.EventDate.ToString("MMM").ToUpper()</span>
+                            </div>
+                            <div class="event-category">@eventItem.Category?.CategoryName</div>
+                        </div>
+                        <div class="event-info">
+                            <h3>@eventItem.EventName</h3>
+                            <p class="event-venue">
+                                <i class="fas fa-map-marker-alt"></i> @eventItem.Venue?.VenueName, @eventItem.Venue?.City
+                            </p>
+                            <p class="event-time">
+                                <i class="fas fa-clock"></i> @eventItem.EventDate.ToString("hh:mm tt")
+                            </p>
+                            <div class="event-price">
+                                <span class="price">From $@(eventItem.TicketCategories?.Min(tc => tc.Price) ?? 0)</span>
+                                <button class="btn btn-primary book-now-btn"
+                                        data-event-id="@eventItem.EventId"
+                                        data-event-name="@eventItem.EventName">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.NextMonthEvents.Any())
+                {
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No events next month</h3>
+                        <p>Check back soon for new events!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+ 
+    <!-- Featured Events -->
+    <section class="featured-events" id="featured-events">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Events</h2>
+                @* <div class="event-tabs">
+                    <button class="tab-btn active" data-tab="trending">Trending</button>
+                    <button class="tab-btn" data-tab="upcoming">This Week</button>
+                    <button class="tab-btn" data-tab="rated">Top Rated</button>
+                </div> *@
+            </div>
+
+            <div class="events-grid" id="events-grid">
+                @foreach (var eventItem in Model.FeaturedEvents)
+                {
+                    <div class="event-card" data-event-id="@eventItem.EventId">
+                        <div class="event-image">
+                            <img src="@(eventItem.ImageUrl ?? "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop")"
+                                 alt="@eventItem.EventName">
+                            <div class="event-date">
+                                <span class="day">@eventItem.EventDate.Day</span>
+                                <span class="month">@eventItem.EventDate.ToString("MMM").ToUpper()</span>
+                            </div>
+                            <div class="event-category">@eventItem.Category?.CategoryName</div>
+                        </div>
+                        <div class="event-info">
+                            <h3>@eventItem.EventName</h3>
+                            <p class="event-venue">
+                                <i class="fas fa-map-marker-alt"></i> @eventItem.Venue?.VenueName, @eventItem.Venue?.City
+                            </p>
+                            <p class="event-time">
+                                <i class="fas fa-clock"></i> @eventItem.EventDate.ToString("hh:mm tt")
+                            </p>
+                            <div class="event-price">
+                                <span class="price">From $@(eventItem.TicketCategories?.Min(tc => tc.Price) ?? 0)</span>
+                                <button class="btn btn-primary book-now-btn"
+                                        data-event-id="@eventItem.EventId"
+                                        data-event-name="@eventItem.EventName">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (!Model.FeaturedEvents.Any())
+            {
+                <div class="no-events">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>No Events Available</h3>
+                    <p>Check back soon for exciting events!</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Search Results Section (Hidden by default) -->
+    <section class="search-results" id="search-results" style="display: none;">
+        <div class="container">
+            <h2 id="search-results-title">Search Results</h2>
+            <div class="events-grid" id="search-results-grid">
+                <!-- Search results will be populated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Promotional Section -->
+    <section class="promo-section">
+        <div class="container">
+            <div class="promo-banner">
+                <div class="promo-content">
+                    <h2>Special Offers</h2>
+                    <p>Use code <strong>WELCOME10</strong> for 10% off your first booking</p>
+                    <p>Join our loyalty program and earn points on every purchase</p>
+                    <button class="btn btn-secondary">Learn More</button>
+                </div>
+                <div class="promo-image">
+                    <i class="fas fa-gift"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Stay Updated</h2>
+                <p>Get exclusive offers and be the first to know about new events</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" id="newsletter-email" placeholder="Enter your email address" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>StarTickets</span>
+                    </div>
+                    <p>Your premier destination for booking tickets to amazing events worldwide.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="@Url.Action("Index", "Home")">Home</a></li>
+                        <li><a href="#featured-events">Browse Events</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Categories</h3>
+                    <ul>
+                        @foreach (var category in Model.Categories.Take(5))
+                        {
+                            <li><a href="#" data-category="@category.CategoryId">@category.CategoryName</a></li>
+                        }
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Customer Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 StarTickets. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading events...</p>
+    </div>
+
+    <script src="~/js/Home.js" asp-append-version="true"></script>
+    <script>
+        // Pass server data to JavaScript
+        window.serverData = {
+            categories: @Html.Raw(Json.Serialize(Model.Categories.Select(c => new { id = c.CategoryId, name = c.CategoryName }))),
+            venues: @Html.Raw(Json.Serialize(Model.Venues.Select(v => new { id = v.VenueId, name = v.VenueName, city = v.City }))),
+            isAuthenticated: @Json.Serialize(Model.IsAuthenticated),
+            searchUrl: '@Url.Action("SearchEvents", "Home")',
+            categoryUrl: '@Url.Action("GetEventsByCategory", "Home")',
+            subscribeUrl: '@Url.Action("Subscribe", "Home")',
+            bookingUrl: '@(Model.IsAuthenticated? Url.Action("BookTicket", "Booking") : Url.Action("Login", "Auth"))'
+        };
+    </script>
+</body>
+</html>
+
+@functions {
+    string GetCategoryIcon(string categoryName)
+    {
+        return categoryName?.ToLower() switch
+        {
+            "concert" => "music",
+            "theatre" => "theater-masks",
+            "sports" => "football-ball",
+            "cultural" => "palette",
+            "conference" => "users",
+            "workshop" => "tools",
+            _ => "calendar"
+        };
+    }
+
+    string GetCategoryDescription(string categoryName)
+    {
+        return categoryName?.ToLower() switch
+        {
+            "concert" => "Live music from top artists",
+            "theatre" => "Broadway shows & plays",
+            "sports" => "Games & tournaments",
+            "cultural" => "Art exhibitions & cultural events",
+            "conference" => "Business conferences & seminars",
+            "workshop" => "Educational workshops & training",
+            _ => "Amazing events await you"
+        };
+    }
+}

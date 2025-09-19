@@ -1,0 +1,271 @@
+﻿@model StarTickets.Models.ViewModels.CreateUserViewModel
+@{
+    ViewData["Title"] = "Create New User";
+    Layout = "~/Views/Shared/CustomLayouts/_AdminDashboard.cshtml";
+}
+
+<div class="create-user-container">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-user-plus"></i>
+                Create New User
+            </h1>
+            <p class="page-subtitle">Add a new user to the system</p>
+        </div>
+
+        <div class="page-actions">
+            <a href="@Url.Action("Index", "UserManagement")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="Create" method="post" class="create-user-form">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-sections">
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Personal Information
+                    </h3>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="form-label required">First Name</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="LastName" class="form-label required">Last Name</label>
+                                <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-envelope"></i>
+                        Account Information
+                    </h3>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label required">Email Address</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <small class="form-text text-muted">This will be used for login and communications</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Password" class="form-label required">Password</label>
+                                <div class="password-input">
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" id="Password" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('Password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <small class="form-text text-muted">Minimum 6 characters required</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password</label>
+                                <div class="password-input">
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span id="confirmPasswordError" class="text-danger" style="display: none;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role and Permissions Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-shield"></i>
+                        Role and Permissions
+                    </h3>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Role" class="form-label required">User Role</label>
+                                <select asp-for="Role" class="form-control role-select">
+                                    <option value="">Select a role...</option>
+                                    @foreach (var role in Model.UserRoles)
+                                    {
+                                        <option value="@role.RoleId" data-description="@(role.Description)">
+                                            @role.RoleName
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                                <div class="role-description" id="roleDescription" style="display: none;">
+                                    <small class="form-text text-info"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Status Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Account Status
+                    </h3>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check-group">
+                                    <div class="form-check">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                        <label asp-for="IsActive" class="form-check-label">
+                                            <strong>Active Account</strong>
+                                            <small class="d-block text-muted">User can login and access the system</small>
+                                        </label>
+                                    </div>
+
+                                    @* <div class="form-check">
+                                        <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
+                                        <label asp-for="EmailConfirmed" class="form-check-label">
+                                            <strong>Email Confirmed</strong>
+                                            <small class="d-block text-muted">Mark email as verified (skip email verification)</small>
+                                        </label>
+                                    </div> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Create User
+                </button>
+
+                <a href="@Url.Action("Index", "Users")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo"></i>
+                    Reset Form
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-forms.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Role selection change handler
+            $('.role-select').change(function () {
+                const selectedOption = $(this).find(':selected');
+                const description = selectedOption.data('description');
+
+                if (description) {
+                    $('#roleDescription small').text(description);
+                    $('#roleDescription').show();
+                } else {
+                    $('#roleDescription').hide();
+                }
+            });
+
+            // Password confirmation validation
+            $('#confirmPassword').on('input', function () {
+                const password = $('#Password').val();
+                const confirmPassword = $(this).val();
+
+                if (confirmPassword && password !== confirmPassword) {
+                    $('#confirmPasswordError').text('Passwords do not match').show();
+                } else {
+                    $('#confirmPasswordError').hide();
+                }
+            });
+
+            // Form validation before submit
+            $('.create-user-form').on('submit', function (e) {
+                const password = $('#Password').val();
+                const confirmPassword = $('#confirmPassword').val();
+
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    $('#confirmPasswordError').text('Passwords do not match').show();
+                    $('#confirmPassword').focus();
+                    return false;
+                }
+
+                // Show loading state
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Creating User...');
+            });
+        });
+
+        function togglePassword(fieldId) {
+            const field = $('#' + fieldId);
+            const button = field.siblings('.password-toggle');
+            const icon = button.find('i');
+
+            if (field.attr('type') === 'password') {
+                field.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                field.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        }
+    </script>
+}

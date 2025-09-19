@@ -1,0 +1,653 @@
+﻿/* Global Dark Theme */
+* {
+    box-sizing: border-box;
+}
+
+body {
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+/*    background: linear-gradient(180deg, #1b2c75 0%, #764ba2 100%);*/
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container-fluid {
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Page Header Styles */
+.page-header {
+    /*    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);*/
+    background: linear-gradient(180deg, #1b2c75 0%, #764ba2 100%);
+    color: #f1f5f9;
+    padding: 1.5rem 0;
+    margin-bottom: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+    .page-header h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+        .page-header h1 i {
+            font-size: 2rem;
+            color: #60a5fa;
+        }
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+    margin: 0 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    display: inline-flex;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: rgba(241, 245, 249, 0.6);
+}
+
+.breadcrumb-item a {
+    color: rgba(241, 245, 249, 0.8);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+    .breadcrumb-item a:hover {
+        color: #60a5fa;
+    }
+
+.breadcrumb-item.active {
+    color: rgba(241, 245, 249, 0.9);
+}
+
+/* Alert Styles */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+    color: white;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
+    color: white;
+    border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.alert ul {
+    margin-bottom: 0;
+    padding-left: 1.25rem;
+}
+
+/* Main Card - Full Screen */
+.main-card {
+    background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    min-height: calc(100vh - 120px);
+    border: 1px solid #475569;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    padding: 2rem;
+    border-bottom: 2px solid #475569;
+    text-align: center;
+}
+
+    .card-header h3 {
+        margin: 0;
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+        .card-header h3 i {
+            color: #60a5fa;
+            font-size: 1.4rem;
+        }
+
+/* Form Sections */
+.form-section {
+    padding: 2.5rem;
+    border-bottom: 1px solid #475569;
+    background: rgba(30, 41, 59, 0.3);
+}
+
+    .form-section:nth-child(even) {
+        background: rgba(51, 65, 85, 0.3);
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+.section-title {
+    color: #f1f5f9;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #60a5fa;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+    .section-title i {
+        color: #60a5fa;
+        font-size: 1.3rem;
+    }
+
+/* Form Controls */
+.form-label {
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: #f87171;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid #475569;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #1e293b, #334155);
+    color: #e2e8f0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+    .form-control::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 0.3rem rgba(96, 165, 250, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(145deg, #334155, #475569);
+        outline: 0;
+        color: #f1f5f9;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #f87171;
+        background: linear-gradient(145deg, #3f1f1f, #4f2020);
+        color: #fecaca;
+    }
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #f87171;
+    font-weight: 500;
+}
+
+/* Form Grid Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Image Preview */
+.image-preview-container {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.image-preview {
+    max-width: 350px;
+    max-height: 250px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border: 2px solid #60a5fa;
+}
+
+/* Checkbox Styling */
+.form-check {
+    padding-left: 0;
+    margin-top: 1rem;
+}
+
+.form-check-input {
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-right: 0.75rem;
+    border: 2px solid #64748b;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #1e293b, #334155);
+    transition: all 0.3s ease;
+}
+
+    .form-check-input:checked {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        border-color: #60a5fa;
+        margin-left: 10px;
+    }
+
+    .form-check-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 0.3rem rgba(96, 165, 250, 0.3);
+        margin-left: 10px;
+    }
+
+.form-check-label {
+    font-weight: 500;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Ticket Categories */
+.ticket-categories {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #475569;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ticket-category-item {
+    background: linear-gradient(145deg, #334155, #475569);
+    border: 1px solid #64748b;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+    .ticket-category-item:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        transform: translateY(-3px);
+        border-color: #60a5fa;
+    }
+
+    .ticket-category-item:last-child {
+        margin-bottom: 0;
+    }
+
+/* Remove Category Button */
+.remove-category-btn {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+    .remove-category-btn:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: scale(1.15);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+/* Add Category Button */
+.add-category-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 auto;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    font-size: 1rem;
+}
+
+    .add-category-btn:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+/* Action Buttons */
+.action-buttons {
+    padding: 2.5rem;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    border-top: 2px solid #475569;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 150px;
+    justify-content: center;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: white;
+    border-color: #64748b;
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+}
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #475569, #334155);
+        border-color: #475569;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+    }
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        color: white;
+    }
+
+    .btn-primary:disabled {
+        background: linear-gradient(135deg, #64748b, #475569);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Loading State */
+    .btn-primary.loading .btn-text {
+        opacity: 0.7;
+    }
+
+    .btn-primary.loading::after {
+        content: "";
+        width: 18px;
+        height: 18px;
+        margin-left: 0.5rem;
+        border: 2px solid transparent;
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .form-section {
+        padding: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .form-section {
+        padding: 1.5rem;
+    }
+
+    .action-buttons {
+        padding: 2rem;
+        flex-direction: column-reverse;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 1rem 0;
+        text-align: center;
+    }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            justify-content: center;
+        }
+
+    .main-card {
+        margin: 0;
+        border-radius: 0;
+        min-height: calc(100vh - 80px);
+    }
+
+    .form-section {
+        padding: 1.5rem 1rem;
+    }
+
+    .ticket-categories {
+        padding: 1.5rem;
+    }
+
+    .ticket-category-item {
+        padding: 1.5rem;
+    }
+
+    .action-buttons {
+        padding: 1.5rem 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* Form Validation Enhancement */
+.was-validated .form-control:valid,
+.was-validated .form-select:valid {
+    border-color: #10b981;
+    background: linear-gradient(145deg, #1f3a35, #2d5a50);
+    color: #a7f3d0;
+}
+
+.was-validated .form-control:invalid,
+.was-validated .form-select:invalid {
+    border-color: #f87171;
+    background: linear-gradient(145deg, #3f1f1f, #4f2020);
+    color: #fecaca;
+}
+
+/* Animation for adding/removing ticket categories */
+.ticket-category-item {
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Focus indicators for accessibility */
+.form-control:focus,
+.form-select:focus,
+.btn:focus {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #475569, #64748b);
+    border-radius: 6px;
+    border: 2px solid #0f172a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+
+/* Print styles */
+@media print {
+    .page-header,
+    .action-buttons,
+    .remove-category-btn,
+    .add-category-btn {
+        display: none;
+    }
+
+    .main-card {
+        box-shadow: none;
+        border: 1px solid #475569;
+        background: white;
+        color: black;
+    }
+
+    .form-section {
+        background: white;
+        color: black;
+    }
+}
+
+/* Glowing effects for interactive elements */
+.btn:hover,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+}
+
+/* Additional dark theme enhancements */
+.form-select option {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Enhanced backdrop effects */
+.main-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent 30%, 
+        rgba(96, 165, 250, 0.05) 50%, 
+        transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.form-section {
+    position: relative;
+    z-index: 2;
+}

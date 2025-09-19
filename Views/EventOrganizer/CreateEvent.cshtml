@@ -1,0 +1,309 @@
+﻿@model StarTickets.Models.ViewModels.CreateEventOrganizerViewModel
+@{
+    ViewData["Title"] = "Create Event";
+}
+
+<link rel="stylesheet" href="~/css/CreateEvent.css">
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-plus-circle"></i> Create Event</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="~/EventOrganizer">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="~/EventOrganizer/MyEvents">My Events</a></li>
+                <li class="breadcrumb-item active">Create Event</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Alert Messages -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="alert alert-danger" id="errorAlert" style="display: none;">
+        <div id="errorMessage"></div>
+    </div>
+
+    <div class="alert alert-success" id="successAlert" style="display: none;">
+        <div id="successMessage"></div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="main-card">
+        <div class="card-header">
+            <h3><i class="fas fa-calendar-plus"></i> Event Information</h3>
+        </div>
+
+        <form id="createEventForm" method="post" asp-action="CreateEvent" asp-controller="EventOrganizer" novalidate>
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Basic Information
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label asp-for="EventName" class="form-label required-field"></label>
+                            <input asp-for="EventName" class="form-control" placeholder="Enter event name" maxlength="300" required>
+                            <span asp-validation-for="EventName" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label required-field"></label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(Model.Categories, "CategoryId", "CategoryName"))" required>
+                                <option value="">Select Category</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter event description"></textarea>
+                    <span asp-validation-for="Description" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="mb-3">
+                        <label asp-for="BandName" class="form-label"></label>
+                        <input asp-for="BandName" class="form-control" placeholder="Enter band or artist name" maxlength="200">
+                        <span asp-validation-for="BandName" class="invalid-feedback"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Performer" class="form-label"></label>
+                        <input asp-for="Performer" class="form-control" placeholder="Enter performer name" maxlength="200">
+                        <span asp-validation-for="Performer" class="invalid-feedback"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ImageUrl" class="form-label"></label>
+                    <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" maxlength="500">
+                    <span asp-validation-for="ImageUrl" class="invalid-feedback"></span>
+                    <div class="image-preview-container" style="display: none;">
+                        <img id="imagePreview" class="image-preview" alt="Event Image Preview">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Date & Time
+                </h4>
+
+                <div class="form-grid">
+                    <div class="mb-3">
+                        <label asp-for="EventDate" class="form-label required-field"></label>
+                        <input asp-for="EventDate" class="form-control" type="datetime-local" required>
+                        <span asp-validation-for="EventDate" class="invalid-feedback"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EndDate" class="form-label"></label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local">
+                        <span asp-validation-for="EndDate" class="invalid-feedback"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Venue & Organizer -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Venue Information
+                </h4>
+
+                <div class="mb-3">
+                    <label asp-for="VenueId" class="form-label required-field"></label>
+                    <select asp-for="VenueId" class="form-select" asp-items="@(new SelectList(Model.Venues, "VenueId", "VenueName"))" required>
+                        <option value="">Select Venue</option>
+                    </select>
+                    <span asp-validation-for="VenueId" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" checked>
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+            </div>
+
+            <!-- Ticket Categories -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    Ticket Categories
+                </h4>
+
+                <div class="ticket-categories">
+                    <div id="ticketCategoriesContainer">
+                        @if (Model.TicketCategories != null && Model.TicketCategories.Any())
+                        {
+                            @foreach (var ticketCategory in Model.TicketCategories.Select((tc, index) => new { TicketCategory = tc, Index = index }))
+                            {
+                                <div class="ticket-category-item" data-index="@ticketCategory.Index">
+                                    <button type="button" class="remove-category-btn" onclick="removeTicketCategory(this)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label required-field">Category Name</label>
+                                                <input type="text" class="form-control" name="TicketCategories[@ticketCategory.Index].CategoryName"
+                                                       value="@ticketCategory.TicketCategory.CategoryName" placeholder="e.g., VIP, General" maxlength="100" required>
+                                                <div class="invalid-feedback"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label required-field">Price ($)</label>
+                                                <input type="number" class="form-control" name="TicketCategories[@ticketCategory.Index].Price"
+                                                       value="@ticketCategory.TicketCategory.Price" placeholder="0.00" min="0.01" max="999999.99" step="0.01" required>
+                                                <div class="invalid-feedback"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label required-field">Quantity</label>
+                                                <input type="number" class="form-control" name="TicketCategories[@ticketCategory.Index].TotalQuantity"
+                                                       value="@ticketCategory.TicketCategory.TotalQuantity" placeholder="100" min="1" required>
+                                                <div class="invalid-feedback"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label class="form-label">Active</label>
+                                                <div class="form-check mt-2">
+                                                    <input asp-for="@Model.TicketCategories[ticketCategory.Index].IsActive" class="form-check-input" />
+                                                    <input type="hidden" asp-for="@Model.TicketCategories[ticketCategory.Index].IsActive" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" name="TicketCategories[@ticketCategory.Index].Description"
+                                          rows="2" placeholder="Optional category description">@ticketCategory.TicketCategory.Description</textarea>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <br /><br />
+                    <button type="button" class="add-category-btn" id="addCategoryBtn">
+                        <i class="fas fa-plus"></i>
+                        Add Ticket Category
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hidden fields -->
+            <input asp-for="OrganizerId" type="hidden">
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="~/EventOrganizer/MyEvents" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="btn-text">
+                        <i class="fas fa-save"></i>
+                        Create Event
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Hidden Template for Ticket Category -->
+<template id="ticketCategoryTemplate">
+    <div class="ticket-category-item" data-index="">
+        <button type="button" class="remove-category-btn" onclick="removeTicketCategory(this)">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label required-field">Category Name</label>
+                    <input type="text" class="form-control" name="TicketCategories[].CategoryName"
+                           placeholder="e.g., VIP, General" maxlength="100" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label class="form-label required-field">Price ($)</label>
+                    <input type="number" class="form-control" name="TicketCategories[].Price"
+                           placeholder="0.00" min="0.01" max="999999.99" step="0.01" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label class="form-label required-field">Quantity</label>
+                    <input type="number" class="form-control" name="TicketCategories[].TotalQuantity"
+                           placeholder="100" min="1" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label class="form-label">Active</label>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" name="TicketCategories[].IsActive" value="true" checked>
+                        <input type="hidden" name="TicketCategories[].IsActive" value="false" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="TicketCategories[].Description"
+                      rows="2" placeholder="Optional category description"></textarea>
+        </div>
+    </div>
+</template>
+
+<script src="~/js/CreateEvent.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

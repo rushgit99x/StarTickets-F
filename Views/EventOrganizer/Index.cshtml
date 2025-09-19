@@ -1,0 +1,347 @@
+﻿@model StarTickets.Models.ViewModels.EventOrganizerDashboardViewModel
+@{
+    ViewData["Title"] = "StarTickets - Event Organizer Dashboard";
+    Layout = "~/Views/Shared/CustomLayouts/_EventOrganizerDashboard.cshtml";
+}
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="brand">StarTickets</div>
+    </div>
+
+    <nav class="sidebar-menu">
+        <div class="menu-item">
+            <a href="#" class="menu-link active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt menu-icon"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </div>
+
+        <div class="menu-item">
+            @* <a href="#" class="menu-link" data-page="my-events"> *@
+            <a href="@Url.Action("MyEvents")" class="menu-link" data-page="my-events">
+                <i class="fas fa-calendar-check menu-icon"></i>
+                <span class="menu-text">My Events</span>
+                @* <span class="menu-badge">5</span> *@
+            </a>
+        </div>
+
+        <div class="menu-item">
+            <a href="@Url.Action("CreateEvent")" class="menu-link" data-page="create-event">
+                <i class="fas fa-plus-circle menu-icon"></i>
+                <span class="menu-text">Create Event</span>
+            </a>
+        </div>
+
+        @* <div class="menu-item">
+            <a href="@Url.Action("Sales")" class="menu-link" data-page="ticket-sales">
+                <i class="fas fa-ticket-alt menu-icon"></i>
+                <span class="menu-text">Ticket Sales</span>
+            </a>
+        </div> *@
+
+        <div class="menu-item">
+            <a href="@Url.Action("Sales")" class="menu-link" data-page="revenue">
+                <i class="fas fa-chart-line menu-icon"></i>
+                <span class="menu-text">Revenue Reports</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a href="@Url.Action("Profile")" class="menu-link" data-page="profile">
+            @* <a href="#" class="menu-link" data-page="profile"> *@
+                <i class="fas fa-user-circle menu-icon"></i>
+                <span class="menu-text">Profile</span>
+            </a>
+        </div>
+
+        <div class="menu-item">
+            @* <a href="/Account/Logout" class="menu-link"> *@
+            <a href="@Url.Action("Logout")" class="menu-link" data-page="create-event">
+                <i class="fas fa-sign-out-alt menu-icon"></i>
+                <span class="menu-text">Logout</span>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <!-- Top Bar -->
+    <div class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="topbar-right">
+            @* <div class="topbar-search">
+                <input type="text" placeholder="Search events, tickets, customers...">
+                <i class="fas fa-search search-icon"></i>
+            </div> *@
+
+            @* <div class="position-relative">
+                <i class="fas fa-bell" style="font-size: 18px; color: #6b7280; cursor: pointer;"></i>
+                <div class="notification-dot"></div>
+            </div> *@
+
+            @{ 
+                var displayName = (ViewBag.UserName as string) ?? "Event Organizer"; 
+                var displayEmail = (ViewBag.UserEmail as string) ?? "organizer@startickets.com"; 
+                string initials = "EO"; 
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    var parts = displayName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 1)
+                    {
+                        initials = parts[0].Substring(0, 1).ToUpper();
+                    }
+                    else
+                    {
+                        initials = (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
+                    }
+                }
+            }
+            <div class="user-menu">
+                <div class="user-avatar">@initials</div>
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">@displayName</div>
+                    <div style="font-size: 12px; color: #6b7280;">@displayEmail</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page-content">
+            <h1 class="page-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Event Organizer Dashboard
+            </h1>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="@Url.Action("CreateEvent")" class="quick-action-btn" data-action="create-event">
+                    <i class="fas fa-plus-circle"></i>
+                    Create New Event
+                </a>
+                <a href="@Url.Action("MyEvents")" class="quick-action-btn success" data-action="my-events">
+                    <i class="fas fa-calendar-check"></i>
+                    Manage Events
+                </a>
+                <a href="@Url.Action("Sales")" class="quick-action-btn warning" data-action="ticket-sales">
+                    <i class="fas fa-ticket-alt"></i>
+                    View Sales
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stats-card primary">
+                    <div class="stats-header">
+                        <div>
+                            <div class="stats-value" data-target="5">@Model.ActiveEvents</div>
+                            <div class="stats-label">Active Events</div>
+                            <div class="stats-change positive">
+                                <i class="fas fa-arrow-up"></i> +2 this month
+                            </div>
+                        </div>
+                        <div class="stats-icon primary">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card success">
+                    <div class="stats-header">
+                        <div>
+                            <div class="stats-value" data-target="1247">@Model.TotalTicketsSold</div>
+                            <div class="stats-label">Tickets Sold</div>
+                            <div class="stats-change positive">
+                                <i class="fas fa-arrow-up"></i> +15% from last month
+                            </div>
+                        </div>
+                        <div class="stats-icon success">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card warning">
+                    <div class="stats-header">
+                        <div>
+                            <div class="stats-value" data-target="18650">@Model.TotalRevenue.ToString("C")</div>
+                            <div class="stats-label">Total Revenue</div>
+                            <div class="stats-change positive">
+                                <i class="fas fa-arrow-up"></i> +22% from last month
+                            </div>
+                        </div>
+                        <div class="stats-icon warning">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Events Table -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        My Upcoming Events
+                    </h3>
+                    @* <a href="#" class="quick-action-btn" data-action="my-events">View All Events</a> *@
+                </div>
+                <div class="card-body">
+                    <div class="table-wrapper">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Event Name</th>
+                                    <th>Date & Time</th>
+                                    <th>Venue</th>
+                                    <th>Tickets Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+@{
+    var recentEvents = Model?.RecentEvents ?? new List<StarTickets.Models.Event>();
+}
+@foreach (var ev in recentEvents)
+{
+    var ticketsSold = ev.Bookings?.Where(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed)
+        .SelectMany(b => b.BookingDetails ?? new List<StarTickets.Models.BookingDetail>())
+        .Sum(bd => bd.Quantity) ?? 0;
+    var totalCapacity = ev.TicketCategories?.Sum(tc => tc.TotalQuantity) ?? 0;
+    var revenue = ev.Bookings?.Where(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed)
+        .Sum(b => b.FinalAmount) ?? 0m;
+    var occupancyPercent = totalCapacity > 0 ? (double)ticketsSold / totalCapacity * 100 : 0;
+<tr>
+    <td>
+        <div class="fw-bold">@ev.EventName</div>
+        <small class="text-muted">@ev.Category?.CategoryName</small>
+    </td>
+    <td>
+        <div>@ev.EventDate.ToString("MMM d, yyyy")</div>
+        <small class="text-muted">@ev.EventDate.ToString("h:mm tt")</small>
+    </td>
+    <td>@ev.Venue?.VenueName</td>
+    <td>
+        <div>@ticketsSold @(" / ") @totalCapacity</div>
+        <div class="progress mt-1" style="height: 4px;">
+            <div class="progress-bar bg-success" style="width: @occupancyPercent%"></div>
+        </div>
+    </td>
+    <td class="fw-bold text-success">@revenue.ToString("C")</td>
+    <td>
+        @if (ev.IsActive && ev.Status == StarTickets.Models.EventStatus.Published)
+        {
+            <span class="status-badge status-active">Active</span>
+        }
+        else if (ev.Status == StarTickets.Models.EventStatus.Draft)
+        {
+            <span class="status-badge status-pending">Draft</span>
+        }
+        else
+        {
+            <span class="status-badge">@ev.Status</span>
+        }
+    </td>
+    <td>
+        <div class="action-buttons">
+            <a class="btn-action btn-view" title="View Details" href="@Url.Action("EventDetails", new { id = ev.EventId })"><i class="fas fa-eye"></i></a>
+            <a class="btn-action btn-edit" title="Edit Event" href="@Url.Action("EditEvent", new { id = ev.EventId })"><i class="fas fa-edit"></i></a>
+            <a class="btn-action btn-analytics" title="Analytics" href="@Url.Action("Sales", new { eventId = ev.EventId })"><i class="fas fa-chart-bar"></i></a>
+        </div>
+    </td>
+</tr>
+}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <!-- Create Event Page -->
+        <div id="create-event-page" class="page-content" style="display: none;">
+            <h1 class="page-title">
+                <i class="fas fa-plus-circle"></i>
+                Create New Event
+            </h1>
+            <div class="dashboard-card">
+                <div class="card-body">
+                    <form class="event-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Event Name</label>
+                                    <input type="text" class="form-control" placeholder="Enter event name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select class="form-control">
+                                        <option>Concert</option>
+                                        <option>Theatre</option>
+                                        <option>Cultural</option>
+                                        <option>Sports</option>
+                                        <option>Conference</option>
+                                        <option>Workshop</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" rows="4" placeholder="Event description"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Event Date</label>
+                                    <input type="datetime-local" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>End Date</label>
+                                    <input type="datetime-local" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Venue</label>
+                                    <select class="form-control">
+                                        <option>Central Park Arena</option>
+                                        <option>Blue Note Club</option>
+                                        <option>Stadium Arena</option>
+                                        <option>Convention Center</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Band/Performer</label>
+                                    <input type="text" class="form-control" placeholder="Band or performer name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="quick-action-btn success">Create Event</button>
+                            <button type="button" class="quick-action-btn" style="background: #6b7280;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

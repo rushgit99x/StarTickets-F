@@ -1,0 +1,335 @@
+﻿@model StarTickets.Models.ViewModels.ContactViewModel
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<!-- CSS Reference -->
+<link rel="stylesheet" href="~/css/contact.css" />
+
+<!-- Contact Hero Section -->
+<section class="contact-hero">
+    <div class="container">
+        <div class="hero-content fade-in">
+            <h1>Get In Touch</h1>
+            <p>We're here to help you with all your ticketing needs. Reach out to us anytime!</p>
+        </div>
+    </div>
+</section>
+
+<header class="header">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-ticket-alt"></i>
+                <span>StarTickets</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Home")" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Home")#featured-events" class="nav-link">Events</a>
+                </li>
+                @* <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Categories <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-music"></i> Concerts</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-theater-masks"></i> Theatre</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-football-ball"></i> Sports</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-palette"></i> Cultural</a></li>
+                    </ul>
+                </li> *@
+                <li class="nav-item">
+                    <a href="@Url.Action("About", "Home")" class="nav-link ">About</a>
+                </li>
+                <li class="nav-item me-3">
+                    <a href="@Url.Action("Contact", "Home")" class="nav-link active">Contact</a>
+                </li>
+            </ul>
+
+            @* <div class="nav-search me-4">
+                <input type="text" id="nav-search-input" placeholder="Search events..." class="search-input">
+                <button class="search-btn" id="nav-search-btn"><i class="fas fa-search"></i></button>
+            </div> *@
+
+            @* <div class="nav-actions">
+                <button class="btn btn-outline" onclick="window.location.href='@Url.Action("Login", "Auth")'">Login</button>
+                <button class="btn btn-primary" onclick="window.location.href='@Url.Action("Register", "Auth")'">Sign Up</button>
+            </div> *@
+
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Contact Section -->
+<section class="contact-section">
+    <div class="container">
+        @if (TempData["ContactSuccess"] != null)
+        {
+            <div class="alert alert-success fade-in" role="alert">
+                <i class="fas fa-check-circle"></i>
+                @TempData["ContactSuccess"]
+            </div>
+        }
+
+        <div class="contact-wrapper">
+            <!-- Contact Form -->
+            <div class="contact-form-container slide-in-left">
+                <div class="form-header">
+                    <h2>Send us a Message</h2>
+                    <p>Fill out the form below and we'll get back to you as soon as possible.</p>
+                </div>
+                
+                <form id="contact-form" asp-action="Contact" asp-controller="Home" method="post" class="contact-form">
+                    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Name" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Full Name
+                            </label>
+                            <input asp-for="Name" class="form-input" placeholder="Enter your full name" />
+                            <span asp-validation-for="Name" class="validation-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope"></i>
+                                Email Address
+                            </label>
+                            <input asp-for="Email" class="form-input" placeholder="you@example.com" />
+                            <span asp-validation-for="Email" class="validation-message"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Reason" class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Inquiry Type
+                            </label>
+                            <select asp-for="Reason" class="form-select">
+                                <option value="">-- Select inquiry type --</option>
+                                <option>General Inquiry</option>
+                                <option>Booking Issue</option>
+                                <option>Refund Request</option>
+                                <option>Account Support</option>
+                                <option>Partnership</option>
+                                <option>Technical Support</option>
+                                <option>Event Organizer</option>
+                                <option>Other</option>
+                            </select>
+                            <span asp-validation-for="Reason" class="validation-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="Subject" class="form-label">
+                                <i class="fas fa-heading"></i>
+                                Subject
+                            </label>
+                            <input asp-for="Subject" class="form-input" placeholder="Brief subject line" />
+                            <span asp-validation-for="Subject" class="validation-message"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Message" class="form-label">
+                            <i class="fas fa-comment-alt"></i>
+                            Message
+                        </label>
+                        <textarea asp-for="Message" class="form-textarea" rows="6" placeholder="Tell us how we can help you..."></textarea>
+                        <span asp-validation-for="Message" class="validation-message"></span>
+                        <div class="character-count">
+                            <span id="char-count">0</span>/1000 characters
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary submit-btn" id="submit-btn">
+                        <span class="btn-text">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Sending...
+                        </span>
+                    </button>
+                    
+                    @Html.AntiForgeryToken()
+                </form>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="contact-info-container slide-in-right">
+                <!-- Support Info -->
+                <div class="contact-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3>Customer Support</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>We typically respond within 1 business day.</p>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <strong>Email</strong>
+                                    <a href="mailto:support@startickets.com">support@startickets.com</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <strong>Phone</strong>
+                                    <a href="tel:1-800-STAR-TIX">1-800-STAR-TIX</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <strong>Hours</strong>
+                                    <span>Mon–Fri, 9:00 AM–5:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Office Info -->
+                <div class="contact-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>Head Office</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <strong>Address</strong>
+                                    <span>StarTickets<br />123 Event Avenue<br />Colombo, Sri Lanka</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="office-actions">
+                            <a href="#" class="office-btn" onclick="openMap()">
+                                <i class="fas fa-directions"></i>
+                                Get Directions
+                            </a>
+                            <a href="#" class="office-btn" onclick="openMap()">
+                                <i class="fas fa-map"></i>
+                                View Map
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media -->
+                <div class="contact-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <h3>Follow Us</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>Stay connected with us on social media for updates and exclusive offers.</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link facebook" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link twitter" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link instagram" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link linkedin" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link youtube" title="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Frequently Asked Questions</h2>
+            <p>Find quick answers to common questions</p>
+        </div>
+        
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h4>How can I get a refund for my tickets?</h4>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Refunds are processed according to the event organizer's refund policy. Please contact our support team with your booking reference for assistance.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h4>Can I transfer my tickets to someone else?</h4>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Ticket transfers are available for most events. You can transfer tickets through your account dashboard or contact our support team for assistance.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h4>What payment methods do you accept?</h4>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>We accept all major credit cards, PayPal, and bank transfers. All payments are processed securely through our encrypted payment system.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h4>How do I receive my tickets?</h4>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Tickets are delivered electronically via email immediately after purchase. You can also access them through your account dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="loading-spinner" style="display: none;">
+    <div class="spinner"></div>
+    <p>Processing your message...</p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/contact.js"></script>
+}

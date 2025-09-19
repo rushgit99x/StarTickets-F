@@ -1,0 +1,93 @@
+﻿@model StarTickets.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    // Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/CustomLayouts/_Login.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2 class="login-title">
+                <i class="fas fa-ticket-alt"></i> StarTickets
+            </h2>
+            <p class="login-subtitle">Welcome back! Please sign in to continue</p>
+        </div>
+
+        <div class="login-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-modern" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-modern" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["ResetLink"] != null)
+            {
+                <div class="alert alert-info alert-modern" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Development Mode:</strong> Reset link:
+                    <br>
+                    <a href="@TempData["ResetLink"]" class="btn btn-sm">@TempData["ResetLink"]</a>
+                </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <input asp-for="@Model.ReturnUrl" type="hidden" />
+
+                <div class="modern-input-group">
+                    <label asp-for="Email" class="modern-label">Email Address</label>
+                    <input asp-for="Email" class="modern-input" placeholder="Enter your email address" />
+                    <i class="fas fa-envelope input-icon"></i>
+                    <span asp-validation-for="Email" class="validation-message"></span>
+                </div>
+
+                <div class="modern-input-group">
+                    <label asp-for="Password" class="modern-label">Password</label>
+                    <input asp-for="Password" class="modern-input" placeholder="Enter your password" />
+                    <i class="fas fa-lock input-icon"></i>
+                    <span asp-validation-for="Password" class="validation-message"></span>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                </button>
+
+                <div class="divider"><br />
+                    <span>or</span>
+                </div>
+
+                <div class="login-links">
+                    <a asp-action="ForgotPassword" class="login-link">
+                        <i class="fas fa-key"></i> Forgot Password?
+                    </a>
+                    <br>
+                    <span style="color: #6c757d; font-size: 14px;">Don't have an account?</span>
+                    <a asp-action="Register" class="login-link">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/login.js"></script>
+}

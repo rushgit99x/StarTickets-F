@@ -1,0 +1,246 @@
+﻿@model StarTickets.Models.ViewModels.CategoryDetailsViewModel
+@{
+    ViewData["Title"] = "Category Details";
+    ViewBag.PageDescription = $"Details for {Model.Category.CategoryName} category";
+    Layout = "~/Views/Shared/CustomLayouts/_CategoryManagement.cshtml";
+}
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb-nav">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index")"><i class="fas fa-tags"></i> Categories</a>
+        </li>
+        <li class="breadcrumb-item active">@Model.Category.CategoryName</li>
+    </ol>
+</nav>
+
+<!-- Category Header -->
+<div class="category-header">
+    <div class="header-content">
+        <div class="category-icon-large">
+            <i class="fas fa-tag"></i>
+        </div>
+        <div class="category-info">
+            <h2>@Model.Category.CategoryName</h2>
+            @if (!string.IsNullOrEmpty(Model.Category.Description))
+            {
+                <p class="description">@Model.Category.Description</p>
+            }
+            else
+            {
+                <p class="description text-muted">No description provided</p>
+            }
+            <div class="meta-info">
+                <span class="badge bg-primary me-2">
+                    <i class="fas fa-calendar-plus"></i> Created @Model.Category.CreatedAt.ToString("MMM dd, yyyy")
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="header-actions">
+        <a href="@Url.Action("Edit", new { id = Model.Category.CategoryId })" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> Edit Category
+        </a>
+        @if (Model.TotalEvents == 0)
+        {
+            <button type="button" class="btn btn-outline-danger"
+                    onclick="deleteCategory(@Model.Category.CategoryId, '@Model.Category.CategoryName')">
+                <i class="fas fa-trash"></i> Delete Category
+            </button>
+        }
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon bg-primary">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="stat-content">
+            <h3>@Model.TotalEvents</h3>
+            <p>Total Events</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-success">
+            <i class="fas fa-play-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>@Model.ActiveEvents</h3>
+            <p>Active Events</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-info">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+            <h3>@Model.UpcomingEvents</h3>
+            <p>Upcoming Events</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-warning">
+            <i class="fas fa-percentage"></i>
+        </div>
+        <div class="stat-content">
+            <h3>@(Model.TotalEvents > 0 ? Math.Round((double)Model.UpcomingEvents / Model.TotalEvents * 100, 1) : 0)%</h3>
+            <p>Future Events</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Events -->
+<div class="events-section">
+    <div class="section-header">
+        <h5><i class="fas fa-calendar-alt"></i> Recent Events in this Category</h5>
+        @if (Model.TotalEvents > Model.RecentEvents.Count)
+        {
+            <a href="@Url.Action("Index", "EventManagement", new { categoryFilter = Model.Category.CategoryId })"
+               class="btn btn-outline-primary btn-sm">
+                View All (@Model.TotalEvents)
+            </a>
+        }
+    </div>
+
+    @if (Model.RecentEvents.Any())
+    {
+        <div class="events-grid">
+            @foreach (var eventItem in Model.RecentEvents)
+            {
+                <div class="event-card">
+                    <div class="event-image">
+                        @if (!string.IsNullOrEmpty(eventItem.ImageUrl))
+                        {
+                            <img src="@eventItem.ImageUrl" alt="@eventItem.EventName" />
+                        }
+                        else
+                        {
+                            <div class="placeholder-image">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        }
+                        <div class="event-status">
+                            @switch (eventItem.Status)
+                            {
+                                case StarTickets.Models.EventStatus.Draft:
+                                    <span class="badge bg-secondary">Draft</span>
+                                    break;
+                                case StarTickets.Models.EventStatus.Published:
+                                    <span class="badge bg-success">Published</span>
+                                    break;
+                                case StarTickets.Models.EventStatus.Cancelled:
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Unknown</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h6>@eventItem.EventName</h6>
+                        <p class="event-date">
+                            <i class="fas fa-calendar"></i>
+                            @eventItem.EventDate.ToString("MMM dd, yyyy HH:mm")
+                        </p>
+                        @if (eventItem.Venue != null)
+                        {
+                            <p class="event-venue">
+                                <i class="fas fa-map-marker-alt"></i>
+                                @eventItem.Venue.VenueName
+                            </p>
+                        }
+                        @if (!string.IsNullOrEmpty(eventItem.Performer))
+                        {
+                            <p class="event-performer">
+                                <i class="fas fa-user"></i>
+                                @eventItem.Performer
+                            </p>
+                        }
+                    </div>
+                    <div class="event-actions">
+                        <a href="@Url.Action("Details", "EventManagement", new { id = eventItem.EventId })"
+                           class="btn btn-sm btn-outline-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-events">
+            <div class="empty-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h6>No Events Yet</h6>
+            <p class="text-muted">No events have been created in this category yet.</p>
+            <a href="@Url.Action("Create", "EventManagement", new { categoryId = Model.Category.CategoryId })"
+               class="btn btn-outline-primary">
+                <i class="fas fa-plus"></i> Create First Event
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Category Actions -->
+<div class="category-actions">
+    <div class="action-group">
+        <h6>Category Management</h6>
+        <div class="btn-group" role="group">
+            <a href="@Url.Action("Edit", new { id = Model.Category.CategoryId })" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit Details
+            </a>
+            <a href="@Url.Action("Create", "EventManagement", new { categoryId = Model.Category.CategoryId })"
+               class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Add Event
+            </a>
+            @if (Model.TotalEvents > 0)
+            {
+                <a href="@Url.Action("Index", "EventManagement", new { categoryFilter = Model.Category.CategoryId })"
+                   class="btn btn-outline-info">
+                    <i class="fas fa-list"></i> View All Events
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the category <strong id="categoryNameToDelete"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    This action cannot be undone. The category will be permanently removed.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips if any
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}

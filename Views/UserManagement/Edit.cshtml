@@ -1,0 +1,356 @@
+﻿@model StarTickets.Models.ViewModels.EditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+    Layout = "~/Views/Shared/CustomLayouts/_AdminDashboard.cshtml";
+}
+
+<div class="edit-user-container">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-user-edit"></i>
+                Edit User
+            </h1>
+            <p class="page-subtitle">Update user information and settings</p>
+        </div>
+        
+        <div class="page-actions">
+            @* <a href="@Url.Action("Details", new { id = Model.UserId })" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i>
+                View Details
+            </a> *@
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form asp-action="Edit" method="post" class="edit-user-form">
+            <input asp-for="UserId" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-sections">
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Personal Information
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="form-label required">First Name</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="LastName" class="form-label required">Last Name</label>
+                                <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-envelope"></i>
+                        Account Information
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label required">Email Address</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <small class="form-text text-muted">This will be used for login and communications</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="LoyaltyPoints" class="form-label">Loyalty Points</label>
+                                <input asp-for="LoyaltyPoints" type="number" class="form-control" min="0" />
+                                <span asp-validation-for="LoyaltyPoints" class="text-danger"></span>
+                                <small class="form-text text-muted">Customer reward points balance</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-key"></i>
+                        Change Password
+                        <small class="text-muted">(Leave blank to keep current password)</small>
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="NewPassword" class="form-label">New Password</label>
+                                <div class="password-input">
+                                    <input asp-for="NewPassword" type="password" class="form-control" placeholder="Enter new password" id="NewPassword" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('NewPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                                <small class="form-text text-muted">Minimum 6 characters required</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ConfirmPassword" class="form-label">Confirm New Password</label>
+                                <div class="password-input">
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm new password" id="ConfirmPassword" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('ConfirmPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role and Permissions Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-shield"></i>
+                        Role and Permissions
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Role" class="form-label required">User Role</label>
+                                <select asp-for="Role" class="form-control role-select">
+                                    <option value="">Select a role...</option>
+                                    @foreach (var role in Model.UserRoles)
+                                    {
+                                        <option value="@role.RoleId" data-description="@role.Description" selected="@(Model.Role == role.RoleId)">
+                                            @role.RoleName
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                                <div class="role-description" id="roleDescription">
+                                    <small class="form-text text-info"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Status Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Account Status
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check-group">
+                                    <div class="form-check">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                        <label asp-for="IsActive" class="form-check-label">
+                                            <strong>Active Account</strong>
+                                            <small class="d-block text-muted">User can login and access the system</small>
+                                        </label>
+                                    </div>
+                                    
+                                    @* <div class="form-check">
+                                        <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
+                                        <label asp-for="EmailConfirmed" class="form-check-label">
+                                            <strong>Email Confirmed</strong>
+                                            <small class="d-block text-muted">Email address has been verified</small>
+                                        </label>
+                                    </div> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Update User
+                </button>
+                
+                @* <a href="@Url.Action("Details", new { id = Model.UserId })" class="btn btn-info">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </a> *@
+                
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+                
+                @* <button type="reset" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo"></i>
+                    Reset Changes
+                </button> *@
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-forms.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Initialize role description display
+            updateRoleDescription();
+
+            // Role selection change handler
+            $('.role-select').change(function() {
+                updateRoleDescription();
+            });
+
+            // Password confirmation validation
+            $('#ConfirmPassword').on('input', function() {
+                validatePasswordConfirmation();
+            });
+            
+            $('#NewPassword').on('input', function() {
+                validatePasswordConfirmation();
+            });
+
+            // Form validation before submit
+            $('.edit-user-form').on('submit', function(e) {
+                const newPassword = $('#NewPassword').val();
+                const confirmPassword = $('#ConfirmPassword').val();
+                
+                if(newPassword || confirmPassword) {
+                    if(newPassword !== confirmPassword) {
+                        e.preventDefault();
+                        showValidationError('#ConfirmPassword', 'Passwords do not match');
+                        $('#ConfirmPassword').focus();
+                        return false;
+                    }
+                    
+                    if(newPassword.length < 6) {
+                        e.preventDefault();
+                        showValidationError('#NewPassword', 'Password must be at least 6 characters long');
+                        $('#NewPassword').focus();
+                        return false;
+                    }
+                }
+                
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Updating User...');
+            });
+
+            $('input').on('input', function() {
+                clearValidationError($(this));
+            });
+        });
+
+        function updateRoleDescription() {
+            const selectedOption = $('.role-select').find(':selected');
+            const description = selectedOption.data('description');
+            
+            if(description) {
+                $('#roleDescription small').text(description);
+                $('#roleDescription').show();
+            } else {
+                $('#roleDescription').hide();
+            }
+        }
+
+        function validatePasswordConfirmation() {
+            const newPassword = $('#NewPassword').val();
+            const confirmPassword = $('#ConfirmPassword').val();
+            
+            if(confirmPassword && newPassword !== confirmPassword) {
+                showValidationError('#ConfirmPassword', 'Passwords do not match');
+            } else {
+                clearValidationError($('#ConfirmPassword'));
+            }
+        }
+
+        function showValidationError(fieldSelector, message) {
+            const field = $(fieldSelector);
+            let errorSpan = field.siblings('.text-danger');
+            
+            if(errorSpan.length === 0) {
+                errorSpan = $('<span class="text-danger"></span>');
+                field.after(errorSpan);
+            }
+            
+            errorSpan.text(message).show();
+            field.addClass('is-invalid');
+        }
+
+        function clearValidationError(field) {
+            field.removeClass('is-invalid');
+            field.siblings('.text-danger').hide();
+        }
+
+        function togglePassword(fieldId) {
+            const field = $('#' + fieldId);
+            const button = field.siblings('.password-toggle');
+            const icon = button.find('i');
+            
+            if(field.attr('type') === 'password') {
+                field.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                field.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        }
+
+        $('button[type="reset"]').click(function(e) {
+            e.preventDefault();
+            
+            if(confirm('Are you sure you want to reset all changes? This will restore the original values.')) {
+                $('#NewPassword, #ConfirmPassword').val('');
+                $('.text-danger').hide();
+                $('.is-invalid').removeClass('is-invalid');
+                $('.edit-user-form')[0].reset();
+                updateRoleDescription();
+            }
+        });
+    </script>
+}

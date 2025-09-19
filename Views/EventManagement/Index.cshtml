@@ -1,0 +1,266 @@
+﻿@model StarTickets.Models.ViewModels.EventManagementViewModel
+@{
+    ViewData["Title"] = "Event Management";
+    ViewBag.PageDescription = "Manage all events in the system";
+    Layout = "~/Views/Shared/CustomLayouts/_EventManagement.cshtml";
+}
+
+<div class="event-management-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-left">
+            <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Create")'">
+                <i class="fas fa-plus"></i> Create New Event
+            </button>
+        </div>
+        <div class="action-bar-right">
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <span class="stat-value">@Model.TotalEvents</span>
+                    <span class="stat-label">Total Events</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-card">
+        <form method="get" asp-action="Index" class="filters-form">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search Events</label>
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" 
+                               placeholder="Search by name, description, or venue...">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <select name="categoryFilter" class="form-select">
+                        <option value="0">All Categories</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.CategoryId" selected="@(Model.CategoryFilter == category.CategoryId)">
+                                @category.CategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="0" selected="@(Model.StatusFilter == StarTickets.Models.EventStatus.Draft)">Draft</option>
+                        <option value="1" selected="@(Model.StatusFilter == StarTickets.Models.EventStatus.Published)">Published</option>
+                        <option value="2" selected="@(Model.StatusFilter == StarTickets.Models.EventStatus.Cancelled)">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Events Table -->
+    <div class="events-table-card">
+        @if (Model.Events.Any())
+        {
+            <div class="table-responsive">
+                <table class="table events-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Category</th>
+                            <th>Organizer</th>
+                            <th>Status</th>
+                            <th>Tickets</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var evt in Model.Events)
+                        {
+                            <tr class="event-row">
+                                <td>
+                                    <div class="event-info">
+                                        @if (!string.IsNullOrEmpty(evt.ImageUrl))
+                                        {
+                                            <img src="@evt.ImageUrl" alt="@evt.EventName" class="event-thumb" />
+                                        }
+                                        else
+                                        {
+                                            <div class="event-thumb-placeholder">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                        }
+                                        <div class="event-details">
+                                            <h6 class="event-name">@evt.EventName</h6>
+                                            @if (!string.IsNullOrEmpty(evt.BandName))
+                                            {
+                                                <small class="text-muted">@evt.BandName</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <strong>@evt.EventDate.ToString("MMM dd, yyyy")</strong><br>
+                                        <small class="text-muted">@evt.EventDate.ToString("hh:mm tt")</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="venue-name">@evt.Venue?.VenueName</span><br>
+                                    <small class="text-muted">@evt.Venue?.City</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-category">@evt.Category?.CategoryName</span>
+                                </td>
+                                <td>
+                                    <div class="organizer-info">
+                                        @evt.Organizer?.FirstName @evt.Organizer?.LastName
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-@evt.Status.ToString().ToLower()">
+                                        @evt.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="ticket-stats">
+                                        @{
+                                            var totalTickets = evt.TicketCategories?.Sum(tc => tc.TotalQuantity) ?? 0;
+                                            var availableTickets = evt.TicketCategories?.Sum(tc => tc.AvailableQuantity) ?? 0;
+                                        }
+                                        <span class="tickets-count">@availableTickets/@totalTickets</span><br>
+                                        <small class="text-muted">Available</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("Details", new { id = evt.EventId })" 
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @* <a href="@Url.Action("Edit", new { id = evt.EventId })" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a> *@
+                                        <a href="@Url.Action("EditForm", new { id = evt.EventId })" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                         <a href="@Url.Action("Delete", new { id = evt.EventId })" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        @* <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    data-bs-toggle="dropdown">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button class="dropdown-item update-status-btn" 
+                                                            data-event-id="@evt.EventId" data-status="1">
+                                                        <i class="fas fa-check text-success"></i> Publish
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item update-status-btn" 
+                                                            data-event-id="@evt.EventId" data-status="0">
+                                                        <i class="fas fa-file-alt text-warning"></i> Draft
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item update-status-btn" 
+                                                            data-event-id="@evt.EventId" data-status="2">
+                                                        <i class="fas fa-times text-danger"></i> Cancel
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger delete-event-btn" 
+                                                            data-event-id="@evt.EventId">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div> *@
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>No Events Found</h4>
+                <p class="text-muted">
+                    @if (string.IsNullOrEmpty(Model.SearchTerm) && Model.CategoryFilter == 0 && !Model.StatusFilter.HasValue)
+                    {
+                        <span>There are no events in the system yet.</span>
+                    }
+                    else
+                    {
+                        <span>No events match your current filters.</span>
+                    }
+                </p>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create First Event
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Events pagination" class="pagination-nav">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.CurrentPage - 1, 
+                        searchTerm = Model.SearchTerm, 
+                        categoryFilter = Model.CategoryFilter,
+                        statusFilter = Model.StatusFilter 
+                    })">Previous</a>
+                </li>
+
+                @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { 
+                            page = i, 
+                            searchTerm = Model.SearchTerm, 
+                            categoryFilter = Model.CategoryFilter,
+                            statusFilter = Model.StatusFilter 
+                        })">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.CurrentPage + 1, 
+                        searchTerm = Model.SearchTerm, 
+                        categoryFilter = Model.CategoryFilter,
+                        statusFilter = Model.StatusFilter 
+                    })">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

@@ -1,0 +1,381 @@
+﻿@model StarTickets.Models.ViewModels.EventOrganizerDetailsViewModel
+@{
+    ViewData["Title"] = "Event Details";
+}
+
+<link href="~/css/EventDetails.css" rel="stylesheet" />
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1>
+            <i class="fas fa-chart-line"></i>
+            Event Details & Analytics
+        </h1>
+        <nav class="breadcrumb">
+            <div class="breadcrumb-item">
+                <a href="@Url.Action("Index", "EventOrganizer")">Dashboard</a>
+            </div>
+            <div class="breadcrumb-item">
+                <a href="@Url.Action("MyEvents", "EventOrganizer")">My Events</a>
+            </div>
+            <div class="breadcrumb-item active">@Model.Event.EventName</div>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Event Overview Card -->
+    <div class="main-card">
+        <div class="card-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h3>
+                        <i class="fas fa-calendar-alt"></i>
+                        @Model.Event.EventName
+                    </h3>
+                    <div class="event-meta">
+                        <span class="event-status status-@Model.Event.Status.ToString().ToLower()">
+                            <i class="fas fa-circle"></i>
+                            @Model.Event.Status
+                        </span>
+                        @if (!Model.Event.IsActive)
+                        {
+                            <span class="event-inactive">
+                                <i class="fas fa-pause-circle"></i>
+                                Inactive
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="action-buttons">
+                        <a href="@Url.Action("EditEvent", "EventOrganizer", new { id = Model.Event.EventId })"
+                           class="btn btn-warning" title="Edit Event">
+                            <i class="fas fa-edit"></i>
+                            Edit Event
+                        </a>
+                        <a href="@Url.Action("MyEvents", "EventOrganizer")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Events
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Stats Overview -->
+        <div class="stats-container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TotalTicketsSold</div>
+                        <div class="stat-label">Tickets Sold</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar" style="width: @Model.TicketsSoldPercentage%"></div>
+                        </div>
+                        <div class="stat-meta">@Model.TicketsSoldPercentage.ToString("F1")% of capacity</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">$@Model.TotalRevenue.ToString("N2")</div>
+                        <div class="stat-label">Total Revenue</div>
+                        <div class="stat-meta">
+                            @if (Model.TotalTicketsSold > 0)
+                            {
+                                <text>Avg: $@((Model.TotalRevenue / Model.TotalTicketsSold).ToString("F2")) per ticket</text>
+                            }
+                            else
+                            {
+                                <text>No sales yet</text>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TotalCapacity</div>
+                        <div class="stat-label">Total Capacity</div>
+                        <div class="stat-meta">
+                            @(Model.TotalCapacity - Model.TotalTicketsSold) remaining
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TicketsSoldPercentage.ToString("F1")%</div>
+                        <div class="stat-label">Occupancy Rate</div>
+                        <div class="stat-meta">
+                            @if (Model.TicketsSoldPercentage >= 80)
+                            {
+                                <span class="text-success">Nearly full!</span>
+                            }
+                            else if (Model.TicketsSoldPercentage >= 50)
+                            {
+                                <span class="text-warning">Half full</span>
+                            }
+                            else
+                            {
+                                <span class="text-info">Getting started</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Information Grid -->
+    <div class="content-grid">
+        <!-- Event Details Card -->
+        <div class="detail-card">
+            <div class="card-header">
+                <h4>
+                    <i class="fas fa-info-circle"></i>
+                    Event Information
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="event-image-container">
+                    @if (!string.IsNullOrEmpty(Model.Event.ImageUrl))
+                    {
+                        <img src="@Model.Event.ImageUrl" alt="@Model.Event.EventName" class="event-detail-image" />
+                    }
+                    else
+                    {
+                        <div class="no-image-placeholder">
+                            <i class="fas fa-image"></i>
+                            <span>No Image Available</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <div class="detail-label">
+                            <i class="fas fa-calendar"></i>
+                            Event Date
+                        </div>
+                        <div class="detail-value">
+                            @Model.Event.EventDate.ToString("dddd, MMMM dd, yyyy")
+                            <div class="detail-sub">@Model.Event.EventDate.ToString("h:mm tt")</div>
+                        </div>
+                    </div>
+
+                    @if (Model.Event.EndDate.HasValue)
+                    {
+                        <div class="detail-row">
+                            <div class="detail-label">
+                                <i class="fas fa-clock"></i>
+                                End Date
+                            </div>
+                            <div class="detail-value">
+                                @Model.Event.EndDate.Value.ToString("dddd, MMMM dd, yyyy")
+                                <div class="detail-sub">@Model.Event.EndDate.Value.ToString("h:mm tt")</div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="detail-row">
+                        <div class="detail-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Venue
+                        </div>
+                        <div class="detail-value">
+                            @Model.Event.Venue?.VenueName
+                            @if (!string.IsNullOrEmpty(Model.Event.Venue?.Address))
+                            {
+                                <div class="detail-sub">@Model.Event.Venue.Address</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">
+                            <i class="fas fa-tag"></i>
+                            Category
+                        </div>
+                        <div class="detail-value">
+                            <span class="category-badge">@Model.Event.Category?.CategoryName</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Event.BandName))
+                    {
+                        <div class="detail-row">
+                            <div class="detail-label">
+                                <i class="fas fa-music"></i>
+                                Band/Artist
+                            </div>
+                            <div class="detail-value">@Model.Event.BandName</div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Event.Performer))
+                    {
+                        <div class="detail-row">
+                            <div class="detail-label">
+                                <i class="fas fa-microphone"></i>
+                                Main Performer
+                            </div>
+                            <div class="detail-value">@Model.Event.Performer</div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Event.Description))
+                    {
+                        <div class="detail-row full-width">
+                            <div class="detail-label">
+                                <i class="fas fa-align-left"></i>
+                                Description
+                            </div>
+                            <div class="detail-value description">
+                                @Model.Event.Description
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Categories Card -->
+        <div class="detail-card">
+            <div class="card-header">
+                <h4>
+                    <i class="fas fa-layer-group"></i>
+                    Ticket Categories
+                </h4>
+            </div>
+            <div class="card-body">
+                @if (Model.Event.TicketCategories != null && Model.Event.TicketCategories.Any())
+                {
+                    <div class="ticket-categories">
+                        @foreach (var category in Model.Event.TicketCategories.Where(tc => tc.IsActive))
+                        {
+                            <div class="ticket-category-item">
+                                <div class="category-header">
+                                    <div class="category-name">@category.CategoryName</div>
+                                    <div class="category-price">$@category.Price.ToString("N2")</div>
+                                </div>
+                                <div class="category-details">
+                                    <div class="quantity-info">
+                                        <span class="sold">@(category.TotalQuantity - category.AvailableQuantity) sold</span>
+                                        <span class="separator">•</span>
+                                        <span class="available">@category.AvailableQuantity available</span>
+                                        <span class="separator">•</span>
+                                        <span class="total">@category.TotalQuantity total</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(category.Description))
+                                    {
+                                        <div class="category-description">@category.Description</div>
+                                    }
+                                </div>
+                                <div class="category-progress">
+                                    <div class="progress-bar" style="width: @(((double)(category.TotalQuantity - category.AvailableQuantity) / category.TotalQuantity) * 100)%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-tickets">
+                        <i class="fas fa-ticket-alt"></i>
+                        <p>No ticket categories configured for this event.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    @if (Model.Event.Bookings != null && Model.Event.Bookings.Any(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed))
+    {
+        <div class="main-card">
+            <div class="card-header">
+                <h4>
+                    <i class="fas fa-clock"></i>
+                    Recent Bookings
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="bookings-table-container">
+                    <table class="bookings-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Date</th>
+                                <th>Tickets</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in Model.Event.Bookings
+                                                    .Where(b => b.PaymentStatus == StarTickets.Models.PaymentStatus.Completed)
+                                                    .OrderByDescending(b => b.BookingDate)
+                                                    .Take(10))
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="booking-reference">#@booking.BookingId</span>
+                                    </td>
+                                    <td>@booking.BookingDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="ticket-count">
+                                            @(booking.BookingDetails?.Sum(bd => bd.Quantity) ?? 0)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="amount">$@booking.FinalAmount.ToString("N2")</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-completed">
+                                            <i class="fas fa-check-circle"></i>
+                                            Completed
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script src="~/js/EventDetails.js"></script>

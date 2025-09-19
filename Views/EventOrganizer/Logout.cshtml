@@ -1,0 +1,175 @@
+﻿<!-- Add this to the existing sidebar menu, replacing the existing logout menu item -->
+<div class="menu-item">
+    <a href="#" class="menu-link" id="logoutLink">
+        <i class="fas fa-sign-out-alt menu-icon"></i>
+        <span class="menu-text">Logout</span>
+    </a>
+</div>
+
+<!-- Add this logout confirmation modal to the main-content area -->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to log out of your Event Organizer account?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="quick-action-btn" data-dismiss="modal" style="background: #6b7280;">Cancel</button>
+                <button type="button" class="quick-action-btn success" id="confirmLogout">Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        overflow: auto;
+    }
+
+        .modal.fade .modal-dialog {
+            transform: translate(0, -50px);
+            transition: transform 0.3s ease-out;
+        }
+
+        .modal.show .modal-dialog {
+            transform: translate(0, 0);
+        }
+
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        max-width: 500px;
+        margin: 1.75rem auto;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: none;
+    }
+
+    .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .modal-body {
+        padding: 16px;
+        color: #4b5563;
+        font-size: 14px;
+    }
+
+    .modal-footer {
+        padding: 16px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #6b7280;
+        cursor: pointer;
+    }
+
+    @@media (max-width: 576px) {
+        .modal-dialog
+
+    {
+        margin: 0.5rem;
+    }
+
+    }
+</style>
+
+<script>
+    // Logout functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutLink = document.getElementById('logoutLink');
+        const logoutModal = document.getElementById('logoutModal');
+        const confirmLogout = document.getElementById('confirmLogout');
+        const closeModal = logoutModal.querySelector('.close');
+        const cancelButton = logoutModal.querySelector('[data-dismiss="modal"]');
+
+        // Show logout confirmation modal
+        logoutLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            logoutModal.style.display = 'block';
+            setTimeout(() => logoutModal.classList.add('show'), 10);
+        });
+
+        // Confirm logout
+        confirmLogout.addEventListener('click', function () {
+            // Show loading notification
+            showNotification('Logging out...', 'info');
+
+            // Simulate logout process
+            setTimeout(() => {
+                // Close modal
+                logoutModal.classList.remove('show');
+                setTimeout(() => logoutModal.style.display = 'none', 300);
+
+                // Redirect to logout endpoint
+                window.location.href = '/Account/Logout';
+
+                // Show success notification
+                showNotification('Successfully logged out', 'success');
+            }, 1000);
+        });
+
+        // Close modal on cancel
+        cancelButton.addEventListener('click', function () {
+            logoutModal.classList.remove('show');
+            setTimeout(() => logoutModal.style.display = 'none', 300);
+        });
+
+        // Close modal on close button
+        closeModal.addEventListener('click', function () {
+            logoutModal.classList.remove('show');
+            setTimeout(() => logoutModal.style.display = 'none', 300);
+        });
+
+        // Close modal on outside click
+        logoutModal.addEventListener('click', function (e) {
+            if (e.target === logoutModal) {
+                logoutModal.classList.remove('show');
+                setTimeout(() => logoutModal.style.display = 'none', 300);
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && logoutModal.style.display === 'block') {
+                logoutModal.classList.remove('show');
+                setTimeout(() => logoutModal.style.display = 'none', 300);
+            }
+        });
+    });
+</script>

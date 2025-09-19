@@ -1,0 +1,692 @@
+@model StarTickets.Models.ViewModels.ReviewsManagementListViewModel
+@{
+    ViewData["Title"] = "Reviews & Ratings Management";
+    Layout = "~/Views/Shared/CustomLayouts/_AdminDashboard.cshtml";
+}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --danger-gradient: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+        --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --card-hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 16px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .page-content {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .page-title i {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.2rem;
+        }
+
+    .dashboard-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+        .dashboard-card:hover {
+            box-shadow: var(--card-hover-shadow);
+        }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* Filter Form Styling */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: white;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #6b7280;
+        color: #6b7280;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        background: transparent;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #6b7280;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+
+    /* Table Styling */
+    .table-wrapper {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        margin: 2rem 0;
+        background: white;
+    }
+
+    .custom-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+        .custom-table thead {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+            .custom-table thead th {
+                padding: 1.2rem 1rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-size: 0.8rem;
+                border: none;
+            }
+
+        .custom-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: var(--transition);
+        }
+
+            .custom-table tbody tr:hover {
+                background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(255, 255, 255, 0.05) 100%);
+                transform: scale(1.001);
+            }
+
+        .custom-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+        }
+
+    /* Star Rating Styling */
+    .star-rating {
+        display: inline-flex;
+        gap: 2px;
+    }
+
+        .star-rating .fas {
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+            .star-rating .fas:hover {
+                transform: scale(1.2);
+            }
+
+    /* Status Badge Styling */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        transition: var(--transition);
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Action Buttons */
+    .btn-sm {
+        padding: 0.4rem 0.6rem;
+        border-radius: 8px;
+        margin: 0 0.1rem;
+        transition: var(--transition);
+        font-size: 0.8rem;
+    }
+
+    .btn-outline-success {
+        border: 2px solid #10b981;
+        color: #10b981;
+        background: transparent;
+    }
+
+        .btn-outline-success:hover:not(:disabled) {
+            background: var(--success-gradient);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+    .btn-outline-warning {
+        border: 2px solid #f59e0b;
+        color: #f59e0b;
+        background: transparent;
+    }
+
+        .btn-outline-warning:hover:not(:disabled) {
+            background: var(--warning-gradient);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+    .btn-outline-danger {
+        border: 2px solid #ef4444;
+        color: #ef4444;
+        background: transparent;
+    }
+
+        .btn-outline-danger:hover {
+            background: var(--danger-gradient);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Review Text Styling */
+    .review-text {
+        max-width: 420px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: var(--transition);
+    }
+
+        .review-text:hover {
+            background: rgba(102, 126, 234, 0.05);
+            white-space: normal;
+            overflow: visible;
+            max-width: none;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+    /* Customer Info Styling */
+    .customer-info {
+        line-height: 1.4;
+    }
+
+    .customer-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .customer-email {
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+
+    /* Event Info Styling */
+    .event-name {
+        font-weight: 600;
+        color: #1f2937;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Date Styling */
+    .date-info {
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Pagination Styling */
+    .pagination-nav {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f1f5f9;
+    }
+
+    .pagination {
+        margin-bottom: 1rem;
+    }
+
+    .page-link {
+        border: none;
+        padding: 0.6rem 1rem;
+        margin: 0 0.2rem;
+        border-radius: 10px;
+        color: #6b7280;
+        background: rgba(255, 255, 255, 0.8);
+        transition: var(--transition);
+        font-weight: 500;
+    }
+
+        .page-link:hover {
+            background: var(--primary-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+    .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .pagination-info {
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Empty State Styling */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        background: var(--gold-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .empty-state h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .page-content
+
+    {
+        padding: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .custom-table {
+        min-width: 800px;
+    }
+
+    .review-text {
+        max-width: 200px;
+    }
+
+    }
+
+    /* Animation */
+    .fade-in {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
+<div id="reviews-page" class="page-content fade-in">
+    <h1 class="page-title">
+        <i class="fas fa-star-half-alt"></i>
+        Reviews & Ratings
+    </h1>
+
+    <div class="dashboard-card">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end mb-3">
+                <div class="col-md-5">
+                    <label class="form-label">
+                        <i class="fas fa-search me-2"></i>Search Reviews
+                    </label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Event name, customer, or review text..." />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">
+                        <i class="fas fa-star me-2"></i>Rating Filter
+                    </label>
+                    <select class="form-select" name="rating">
+                        <option value="">All Ratings</option>
+                        @for (int r = 1; r <= 5; r++)
+                        {
+                            @if (Model.RatingFilter == r)
+                            {
+                                <option value="@r" selected="selected">@r ⭐</option>
+                            }
+                            else
+                            {
+                                <option value="@r">@r ⭐</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">
+                        <i class="fas fa-check-circle me-2"></i>Status Filter
+                    </label>
+                    <select class="form-select" name="approved">
+                        <option value="">All Status</option>
+                        @if (Model.ApprovedFilter == true)
+                        {
+                            <option value="true" selected="selected">Approved</option>
+                        }
+                        else
+                        {
+                            <option value="true">Approved</option>
+                        }
+                        @if (Model.ApprovedFilter == false)
+                        {
+                            <option value="false" selected="selected">Pending</option>
+                        }
+                        else
+                        {
+                            <option value="false">Pending</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-refresh me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+
+            @if (Model.Ratings.Any())
+            {
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar me-2"></i>Created</th>
+                                <th><i class="fas fa-calendar-alt me-2"></i>Event</th>
+                                <th><i class="fas fa-user me-2"></i>Customer</th>
+                                <th class="text-center"><i class="fas fa-star me-2"></i>Rating</th>
+                                <th><i class="fas fa-comment me-2"></i>Review</th>
+                                <th class="text-center"><i class="fas fa-check-circle me-2"></i>Status</th>
+                                <th class="text-center"><i class="fas fa-cogs me-2"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.Ratings)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="date-info">@r.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                        <div class="date-info">@r.CreatedAt.ToLocalTime().ToString("HH:mm")</div>
+                                    </td>
+                                    <td>
+                                        <div class="event-name">@r.Event?.EventName</div>
+                                    </td>
+                                    <td>
+                                        <div class="customer-info">
+                                            <div class="customer-name">@(r.Customer != null ? ($"{r.Customer.FirstName} {r.Customer.LastName}") : "-")</div>
+                                            <div class="customer-email">@r.Customer?.Email</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="star-rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star" style="color: @(i <= r.Rating ? "#f59e0b" : "#d1d5db")"></i>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="review-text" title="@r.Review">@r.Review</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="status-badge @(r.IsApproved ? "status-active" : "status-pending")">
+                                            @(r.IsApproved ? "Approved" : "Pending")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group-vertical" style="gap: 0.2rem;">
+                                            <form method="post" asp-action="Approve" asp-controller="ReviewsManagement" class="d-inline">
+                                                <input type="hidden" name="id" value="@r.RatingId" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Approve Review" @(r.IsApproved ? "disabled" : "")>
+                                                    <i class="fas fa-check me-1"></i>Approve
+                                                </button>
+                                            </form>
+                                            <form method="post" asp-action="Reject" asp-controller="ReviewsManagement" class="d-inline">
+                                                <input type="hidden" name="id" value="@r.RatingId" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Reject Review" @(!r.IsApproved ? "disabled" : "")>
+                                                    <i class="fas fa-ban me-1"></i>Reject
+                                                </button>
+                                            </form>
+                                            <form method="post" asp-action="Delete" asp-controller="ReviewsManagement" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this review permanently?');">
+                                                <input type="hidden" name="id" value="@r.RatingId" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Review">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="pagination-nav">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { search = Model.Search, rating = Model.RatingFilter, approved = Model.ApprovedFilter, page = Model.CurrentPage - 1 })" title="Previous Page">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { search = Model.Search, rating = Model.RatingFilter, approved = Model.ApprovedFilter, page = i })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { search = Model.Search, rating = Model.RatingFilter, approved = Model.ApprovedFilter, page = Model.CurrentPage + 1 })" title="Next Page">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                        <div class="pagination-info">
+                            Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) to @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems)) of @Model.TotalItems reviews
+                        </div>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-star-half-alt"></i></div>
+                    <h4>No Reviews Found</h4>
+                    <p>Try adjusting your filters or search terms to find reviews.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced review text hover functionality
+        const reviewTexts = document.querySelectorAll('.review-text');
+        reviewTexts.forEach(text => {
+            const originalText = text.textContent;
+            if (originalText.length > 50) {
+                text.addEventListener('mouseenter', function() {
+                    this.style.position = 'absolute';
+                    this.style.backgroundColor = 'white';
+                    this.style.border = '2px solid #667eea';
+                    this.style.padding = '1rem';
+                    this.style.borderRadius = '12px';
+                    this.style.maxWidth = '300px';
+                    this.style.whiteSpace = 'normal';
+                    this.style.zIndex = '1000';
+                    this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+                });
+
+                text.addEventListener('mouseleave', function() {
+                    this.style.position = 'relative';
+                    this.style.backgroundColor = 'transparent';
+                    this.style.border = 'none';
+                    this.style.padding = '0.5rem';
+                    this.style.maxWidth = '420px';
+                    this.style.whiteSpace = 'nowrap';
+                    this.style.zIndex = 'auto';
+                    this.style.boxShadow = 'none';
+                });
+            }
+        });
+
+        // Add loading states for action buttons
+        const actionButtons = document.querySelectorAll('form button[type="submit"]');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.disabled && !this.closest('form').onsubmit || this.closest('form').onsubmit()) {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+                    this.disabled = true;
+                }
+            });
+        });
+
+        // Star rating hover effects
+        const stars = document.querySelectorAll('.star-rating .fas');
+        stars.forEach(star => {
+            star.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.3)';
+                this.style.filter = 'brightness(1.2)';
+            });
+
+            star.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.filter = 'brightness(1)';
+            });
+        });
+    });
+</script>

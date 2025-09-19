@@ -1,0 +1,509 @@
+﻿@model StarTickets.Models.ViewModels.UserManagementViewModel
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "~/Views/Shared/CustomLayouts/_AdminDashboard.cshtml";
+}
+
+<div class="user-management-container">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i>
+                User Management
+            </h1>
+            <p class="page-subtitle">Manage all system users, roles, and permissions</p>
+        </div>
+        
+        <div class="page-actions">
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                Create New User
+            </a>
+            <a href="@Url.Action("Export")" class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i>
+                Export Users
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="totalUsers">@Model.TotalUsers</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="activeUsers">0</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="adminUsers">0</div>
+                <div class="stat-label">Admin Users</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="organizerUsers">0</div>
+                <div class="stat-label">Event Organizers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="search-box">
+                <input type="text" name="search" value="@Model.SearchTerm" placeholder="Search users by name or email..." class="search-input">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="filter-group">
+                <select name="roleFilter" class="filter-select">
+                    <option value="">All Roles</option>
+                    @foreach (var role in Model.UserRoles)
+                    {
+                        <option value="@role.RoleId" selected="@(Model.RoleFilter == role.RoleId ? "selected" : null)">
+                            @role.RoleName
+                        </option>
+                    }
+                </select>
+
+                <select name="activeFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="true" selected="@(Model.ActiveFilter == true ? "selected" : null)">Active</option>
+                    <option value="false" selected="@(Model.ActiveFilter == false ? "selected" : null)">Inactive</option>
+                </select>
+                
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-filter"></i>
+                    Apply Filters
+                </button>
+                
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    @* <!-- Bulk Actions -->
+    <div class="bulk-actions">
+        <div class="bulk-select">
+            <input type="checkbox" id="selectAll" class="bulk-checkbox">
+            <label for="selectAll">Select All</label>
+        </div>
+        
+        <div class="bulk-buttons" style="display: none;">
+            <button type="button" class="btn btn-success btn-sm" onclick="bulkAction('activate')">
+                <i class="fas fa-check"></i>
+                Activate Selected
+            </button>
+            <button type="button" class="btn btn-warning btn-sm" onclick="bulkAction('deactivate')">
+                <i class="fas fa-ban"></i>
+                Deactivate Selected
+            </button>
+            <button type="button" class="btn btn-info btn-sm" onclick="bulkAction('confirm_email')">
+                <i class="fas fa-envelope-check"></i>
+                Confirm Email
+            </button>
+
+        </div>
+    </div> *@
+
+    <!-- Users Table -->
+    <div class="table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-col">
+                        @* <input type="checkbox" id="selectAllTable" class="bulk-checkbox"> *@
+                    </th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    @* <th>Email Confirmed</th> *@
+                    @* <th>Loyalty Points</th> *@
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var user in Model.Users)
+                {
+                    <tr data-user-id="@user.UserId">
+                        <td>
+                            @* <input type="checkbox" class="user-checkbox" value="@user.UserId"> *@
+                        </td>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    @user.FirstName.Substring(0, 1)@user.LastName.Substring(0, 1)
+                                </div>
+                                <div class="user-details">
+                                    <div class="user-name">@user.FullName</div>
+                                    @if(!string.IsNullOrEmpty(user.PhoneNumber))
+                                    {
+                                        <div class="user-phone">@user.PhoneNumber</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="email-cell">
+                                @user.Email
+                                @* @if(!user.EmailConfirmed)
+                                {
+                                    <span class="unverified-badge">Unverified</span>
+                                } *@
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge role-@user.Role">
+                                @(user.UserRole?.RoleName ?? "Unknown")
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge @(user.IsActive ? "status-active" : "status-inactive")">
+                                @(user.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+                        @* <td>
+                            @if(user.EmailConfirmed)
+                            {
+                                <i class="fas fa-check-circle text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times-circle text-danger"></i>
+                            }
+                        </td> *@
+                        @* <td>
+                            <span class="loyalty-points">@user.LoyaltyPoints.ToString("N0")</span>
+                        </td> *@
+                        <td>
+                            <div class="date-cell">
+                                <div class="date">@user.CreatedAt?.ToString("MMM dd, yyyy")</div>
+                                <div class="time">@user.CreatedAt?.ToString("HH:mm")</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                @* <a href="@Url.Action("Details", new { id = user.UserId })" class="btn-action btn-view" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a> *@
+                                <a href="@Url.Action("Edit", new { id = user.UserId })" class="btn-action btn-edit" title="Edit User">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @* <button type="button" class="btn-action @(user.IsActive ? "btn-warning" : "btn-success")" 
+                                        onclick="toggleUserStatus(@user.UserId, @user.IsActive.ToString().ToLower())" 
+                                        title="@(user.IsActive ? "Deactivate" : "Activate") User">
+                                    <i class="fas fa-@(user.IsActive ? "ban" : "check")"></i>
+                                </button> *@
+                                @* <button type="button" class="btn-action btn-info" 
+                                        onclick="showResetPasswordModal(@user.UserId, '@user.FullName')" 
+                                        title="Reset Password">
+                                    <i class="fas fa-key"></i>
+                                </button> *@
+                                <a href="@Url.Action("Delete", new { id = user.UserId })" class="btn-action btn-delete" title="Delete User">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if(Model.TotalPages > 1)
+    {
+        <div class="pagination-container">
+            <nav aria-label="User pagination">
+                <ul class="pagination">
+                    @if(Model.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = Model.CurrentPage - 1, 
+                                search = Model.SearchTerm, 
+                                roleFilter = Model.RoleFilter,
+                                activeFilter = Model.ActiveFilter 
+                            })">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+
+                    @for(int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = i, 
+                                search = Model.SearchTerm, 
+                                roleFilter = Model.RoleFilter,
+                                activeFilter = Model.ActiveFilter 
+                            })">@i</a>
+                        </li>
+                    }
+
+                    @if(Model.CurrentPage < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = Model.CurrentPage + 1, 
+                                search = Model.SearchTerm, 
+                                roleFilter = Model.RoleFilter,
+                                activeFilter = Model.ActiveFilter 
+                            })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            
+            <div class="pagination-info">
+                Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) to @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalUsers)) of @Model.TotalUsers users
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Reset password for <strong id="resetUserName"></strong>?</p>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" minlength="6" required>
+                    <small class="form-text text-muted">Minimum 6 characters required</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if(TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if(TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-management.css" />
+}
+
+@section Scripts {
+    <script src="~/js/user-management.js"></script>
+    <script>
+        // Load user statistics on page load
+        $(document).ready(function() {
+            loadUserStats();
+        });
+
+        let currentResetUserId = null;
+
+        function loadUserStats() {
+            $.get('@Url.Action("GetUserStats")')
+                .done(function(response) {
+                    if(response.success) {
+                        $('#totalUsers').text(response.data.totalUsers);
+                        $('#activeUsers').text(response.data.activeUsers);
+                        $('#adminUsers').text(response.data.adminUsers);
+                        $('#organizerUsers').text(response.data.organizerUsers);
+                    }
+                });
+        }
+
+        function toggleUserStatus(userId, currentStatus) {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            
+            if(!confirm(`Are you sure you want to ${action} this user?`)) {
+                return;
+            }
+
+            $.post('@Url.Action("ToggleStatus")', {
+                id: userId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if(response.success) {
+                    showNotification(response.message, 'success');
+                    location.reload();
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showNotification('An error occurred while updating user status.', 'error');
+            });
+        }
+
+        function showResetPasswordModal(userId, userName) {
+            currentResetUserId = userId;
+            $('#resetUserName').text(userName);
+            $('#newPassword').val('');
+            $('#resetPasswordModal').modal('show');
+        }
+
+        function resetPassword() {
+            const newPassword = $('#newPassword').val();
+            
+            if(!newPassword || newPassword.length < 6) {
+                showNotification('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            $.post('@Url.Action("ResetPassword")', {
+                id: currentResetUserId,
+                newPassword: newPassword,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if(response.success) {
+                    showNotification(response.message, 'success');
+                    $('#resetPasswordModal').modal('hide');
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showNotification('An error occurred while resetting password.', 'error');
+            });
+        }
+
+        function bulkAction(action) {
+            const selectedUsers = $('.user-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            if(selectedUsers.length === 0) {
+                showNotification('Please select at least one user.', 'warning');
+                return;
+            }
+
+            const actionText = action === 'activate' ? 'activate' : 
+                             action === 'deactivate' ? 'deactivate' : 
+                             'confirm email for';
+
+            if(!confirm(`Are you sure you want to ${actionText} ${selectedUsers.length} user(s)?`)) {
+                return;
+            }
+
+            $.post('@Url.Action("BulkAction")', {
+                action: action,
+                userIds: selectedUsers,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if(response.success) {
+                    showNotification(response.message, 'success');
+                    location.reload();
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            })
+            .fail(function() {
+                showNotification('An error occurred while performing bulk action.', 'error');
+            });
+        }
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                        type === 'error' ? 'fa-exclamation-circle' : 
+                        type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${icon}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            $('.user-management-container').prepend(alertHtml);
+            
+            setTimeout(() => {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+
+        // Handle bulk selection
+        $('#selectAll, #selectAllTable').change(function() {
+            const isChecked = $(this).is(':checked');
+            $('.user-checkbox').prop('checked', isChecked);
+            toggleBulkActions();
+        });
+
+        $('.user-checkbox').change(function() {
+            toggleBulkActions();
+            
+            // Update select all checkboxes
+            const totalCheckboxes = $('.user-checkbox').length;
+            const checkedCheckboxes = $('.user-checkbox:checked').length;
+            
+            $('#selectAll, #selectAllTable').prop('checked', totalCheckboxes === checkedCheckboxes);
+        });
+
+        function toggleBulkActions() {
+            const selectedCount = $('.user-checkbox:checked').length;
+            if(selectedCount > 0) {
+                $('.bulk-buttons').show();
+            } else {
+                $('.bulk-buttons').hide();
+            }
+        }
+    </script>
+}

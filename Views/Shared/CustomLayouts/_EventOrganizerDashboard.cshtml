@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - StarTickets</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+
+    <!-- External CSS Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/EventOrganizer.css" asp-append-version="true" />
+
+    <!-- Meta Tags -->
+    <meta name="description" content="StarTickets Event Organizer Dashboard - Manage your events, track sales, and analyze performance">
+    <meta name="keywords" content="event management, ticket sales, event organizer, dashboard">
+    <meta name="author" content="StarTickets">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@ViewData["Title"] - StarTickets">
+    <meta property="og:description" content="Professional event management dashboard">
+    <meta property="og:image" content="~/images/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="@ViewData["Title"] - StarTickets">
+    <meta property="twitter:description" content="Professional event management dashboard">
+
+    <!-- Additional head content from views -->
+    @await RenderSectionAsync("Head", required: false)
+
+    <style>
+        /* Critical CSS for faster loading */
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8fafc;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0%
+
+        {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        .page-content {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+            .page-content.loaded {
+                opacity: 1;
+            }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div id="dashboardContainer" style="opacity: 0;">
+        @RenderBody()
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" style="position: fixed; top: 90px; right: 20px; z-index: 10000;"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%;">
+            <h3 style="margin: 0 0 15px 0; color: #1f2937;">Confirm Action</h3>
+            <p id="confirmationMessage" style="margin: 0 0 25px 0; color: #6b7280;"></p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="cancelConfirmation" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button id="proceedConfirmation" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- jQuery (if needed for legacy compatibility) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="~/js/EventOrganizer.js" asp-append-version="true"></script>
+
+    <!-- Additional scripts from views -->
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Application Initialization -->
+    <script>
+        // Hide loading spinner and show dashboard after everything loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate minimum loading time for better UX
+            setTimeout(function() {
+                const spinner = document.getElementById('loadingSpinner');
+                const dashboard = document.getElementById('dashboardContainer');
+                const pageContent = document.querySelector('.page-content');
+
+                if (spinner) spinner.style.display = 'none';
+                if (dashboard) dashboard.style.opacity = '1';
+                if (pageContent) pageContent.classList.add('loaded');
+            }, 500);
+        });
+
+        // Global error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            // Could implement error reporting here
+        });
+
+        // Unhandled promise rejection handling
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            e.preventDefault();
+        });
+
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            if ('performance' in window) {
+                const perfData = performance.getEntriesByType('navigation')[0];
+                const loadTime = perfData.loadEventEnd - perfData.loadEventStart;
+                console.log('Dashboard load time:', loadTime + 'ms');
+
+                // Report slow loading if over 3 seconds
+                if (loadTime > 3000) {
+                    console.warn('Slow page load detected:', loadTime + 'ms');
+                }
+            }
+        });
+
+        // Service Worker registration (for PWA capabilities)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // Online/Offline status detection
+        window.addEventListener('online', function() {
+            showGlobalNotification('Connection restored', 'success');
+        });
+
+        window.addEventListener('offline', function() {
+            showGlobalNotification('Connection lost - working offline', 'warning');
+        });
+
+        // Global notification function
+        function showGlobalNotification(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.style.cssText = `
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                padding: 16px;
+                margin-bottom: 10px;
+                border-left: 4px solid ${getToastColor(type)};
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+            `;
+
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fas ${getToastIcon(type)}" style="color: ${getToastColor(type)};"></i>
+                    <span style="flex: 1;">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #6b7280; cursor: pointer;">&times;</button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        function getToastColor(type) {
+            switch(type) {
+                case 'success': return '#10b981';
+                case 'warning': return '#f59e0b';
+                case 'error': return '#ef4444';
+                default: return '#667eea';
+            }
+        }
+
+        function getToastIcon(type) {
+            switch(type) {
+                case 'success': return 'fa-check-circle';
+                case 'warning': return 'fa-exclamation-triangle';
+                case 'error': return 'fa-times-circle';
+                default: return 'fa-info-circle';
+            }
+        }
+
+        // Global confirmation modal
+        function showConfirmation(message, onConfirm, onCancel) {
+            const modal = document.getElementById('confirmationModal');
+            const messageEl = document.getElementById('confirmationMessage');
+            const proceedBtn = document.getElementById('proceedConfirmation');
+            const cancelBtn = document.getElementById('cancelConfirmation');
+
+            messageEl.textContent = message;
+            modal.style.display = 'block';
+
+            proceedBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (onConfirm) onConfirm();
+            };
+
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (onCancel) onCancel();
+            };
+
+            // Close on outside click
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    if (onCancel) onCancel();
+                }
+            };
+        }
+
+        // Make functions globally available
+        window.showGlobalNotification = showGlobalNotification;
+        window.showConfirmation = showConfirmation;
+
+        // CSS animations for toasts
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @@keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            /* Print styles */
+            @@media print {
+                .sidebar,
+                .topbar,
+                .quick-actions,
+                .btn-action {
+                    display: none !important;
+                }
+
+                .main-content {
+                    margin-left: 0 !important;
+                }
+
+                .dashboard-card {
+                    break-inside: avoid;
+                    box-shadow: none;
+                    border: 1px solid #ddd;
+                }
+            }
+
+            /* High contrast mode support */
+            @@media (prefers-contrast: high) {
+                .stats-card {
+                    border: 2px solid #000;
+                }
+
+                .sidebar {
+                    background: #000;
+                }
+            }
+
+            /* Reduced motion support */
+            @@media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+
+                .loading-spinner .spinner {
+                    animation: none;
+                    border-top-color: transparent;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Dark mode detection and handling
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            console.log('Dark mode preference detected');
+            // Could implement dark theme here
+        }
+
+        // Focus management for accessibility
+        document.addEventListener('keydown', function(e) {
+            // Skip links navigation
+            if (e.key === 'Tab' && !e.shiftKey && document.activeElement === document.body) {
+                const firstFocusable = document.querySelector('.sidebar .menu-link');
+                if (firstFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
+                }
+            }
+        });
+
+        console.log('EventOrganizer Dashboard Layout initialized');
+    </script>
+
+    <!-- Analytics and Tracking (Add your analytics code here) -->
+    <!-- Google Analytics, Adobe Analytics, etc. -->
+    <!-- CSRF Token for AJAX requests -->
+    <meta name="csrf-token" content="@Html.AntiForgeryToken()">
+
+    <!-- Application Metadata -->
+    <script>
+        window.AppConfig = {
+            version: '@System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()',
+            environment: '@Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")',
+            apiBaseUrl: '@Url.Content("~/api/")',
+            currentUser: {
+                id: '@User.Identity.Name',
+                role: 'EventOrganizer'
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+﻿@model StarTickets.Models.ViewModels.VenueManagementViewModel
+@{
+    ViewData["Title"] = "Venue Management";
+    ViewBag.PageDescription = "Manage all venues in the system";
+    Layout = "~/Views/Shared/CustomLayouts/_EventManagement.cshtml";
+}
+@Html.AntiForgeryToken()
+<div class="venue-management-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-left">
+            <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Create")'">
+                <i class="fas fa-plus"></i> Add New Venue
+            </button>
+        </div>
+        <div class="action-bar-right">
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <span class="stat-value">@Model.TotalVenues</span>
+                    <span class="stat-label">Total Venues</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-card">
+        <form method="get" asp-action="Index" class="filters-form">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search Venues</label>
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" 
+                               placeholder="Search by name, address, or city...">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">City</label>
+                    <select name="cityFilter" class="form-select">
+                        <option value="">All Cities</option>
+                        @foreach (var city in Model.Cities)
+                        {
+                            <option value="@city" selected="@(Model.CityFilter == city)">
+                                @city
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="activeFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="true" selected="@(Model.ActiveFilter == true)">Active</option>
+                        <option value="false" selected="@(Model.ActiveFilter == false)">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Venues Table -->
+    <div class="venues-table-card">
+        @if (Model.Venues.Any())
+        {
+            <div class="table-responsive">
+                <table class="table venues-table">
+                    <thead>
+                        <tr>
+                            <th>Venue</th>
+                            <th>Location</th>
+                            <th>Capacity</th>
+                            <th>Contact</th>
+                            <th>Events</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var venue in Model.Venues)
+                        {
+                            <tr class="venue-row" data-venue-id="@venue.VenueId">
+                                <td>
+                                    <div class="venue-info">
+                                        <div class="venue-icon">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <div class="venue-details">
+                                            <h6 class="venue-name">@venue.VenueName</h6>
+                                            <small class="text-muted">
+                                                Created: @venue.CreatedAt.ToString("MMM dd, yyyy")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="location-info">
+                                        <strong>@venue.City, @venue.Country</strong><br>
+                                        <small class="text-muted">@venue.Address</small>
+                                        @if (!string.IsNullOrEmpty(venue.PostalCode))
+                                        {
+                                            <br><small class="text-muted">@venue.PostalCode</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="capacity-info">
+                                        <span class="capacity-number">@venue.Capacity.ToString("N0")</span><br>
+                                        <small class="text-muted">people</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        @if (!string.IsNullOrEmpty(venue.ContactEmail))
+                                        {
+                                            <div><i class="fas fa-envelope text-muted me-1"></i>@venue.ContactEmail</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(venue.ContactPhone))
+                                        {
+                                            <div><i class="fas fa-phone text-muted me-1"></i>@venue.ContactPhone</div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="events-stats">
+                                        @{
+                                            var totalEvents = venue.Events?.Count ?? 0;
+                                            var upcomingEvents = venue.Events?.Count(e => e.EventDate > DateTime.UtcNow) ?? 0;
+                                        }
+                                        <span class="events-count">@totalEvents</span><br>
+                                        <small class="text-muted">
+                                            @upcomingEvents upcoming
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-@(venue.IsActive ? "active" : "inactive")">
+                                        @(venue.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("Details", new { id = venue.VenueId })" 
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("Edit", new { id = venue.VenueId })" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                         <a href="@Url.Action("Delete", new { id = venue.VenueId })" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                          <!-- Toggle Status Button -->
+                                            @* <button type="button" 
+                                                    class="btn btn-sm btn-outline-@(venue.IsActive ? "warning" : "success") toggle-status-btn" 
+                                                    data-venue-id="@venue.VenueId"
+                                                    title="@(venue.IsActive ? "Deactivate" : "Activate") Venue">
+                                                <i class="fas fa-@(venue.IsActive ? "pause" : "play")"></i>
+                                            </button> *@
+
+                                            <!-- Delete Button -->
+                                            @* <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger delete-venue-btn" 
+                                                    data-venue-id="@venue.VenueId"
+                                                    title="Delete Venue">
+                                                <i class="fas fa-trash"></i>
+                                            </button> *@
+                                        @* <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    data-bs-toggle="dropdown">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button class="dropdown-item toggle-status-btn" 
+                                                            data-venue-id="@venue.VenueId">
+                                                        <i class="fas fa-@(venue.IsActive ? "pause" : "play") text-@(venue.IsActive ? "warning" : "success")"></i> 
+                                                        @(venue.IsActive ? "Deactivate" : "Activate")
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger delete-venue-btn" 
+                                                            data-venue-id="@venue.VenueId">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div> *@
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h4>No Venues Found</h4>
+                <p class="text-muted">
+                    @if (string.IsNullOrEmpty(Model.SearchTerm) && string.IsNullOrEmpty(Model.CityFilter) && !Model.ActiveFilter.HasValue)
+                    {
+                        <span>There are no venues in the system yet.</span>
+                    }
+                    else
+                    {
+                        <span>No venues match your current filters.</span>
+                    }
+                </p>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Venue
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Venues pagination" class="pagination-nav">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.CurrentPage - 1, 
+                        searchTerm = Model.SearchTerm, 
+                        cityFilter = Model.CityFilter,
+                        activeFilter = Model.ActiveFilter 
+                    })">Previous</a>
+                </li>
+
+                @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { 
+                            page = i, 
+                            searchTerm = Model.SearchTerm, 
+                            cityFilter = Model.CityFilter,
+                            activeFilter = Model.ActiveFilter 
+                        })">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.CurrentPage + 1, 
+                        searchTerm = Model.SearchTerm, 
+                        cityFilter = Model.CityFilter,
+                        activeFilter = Model.ActiveFilter 
+                    })">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
