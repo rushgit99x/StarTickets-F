@@ -146,11 +146,12 @@
         if (!paymentForm) return;
 
         paymentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            if (this.validatePaymentForm(paymentForm)) {
-                this.processPayment(paymentForm);
+            // If invalid, prevent submission and show validation
+            if (!this.validatePaymentForm(paymentForm)) {
+                e.preventDefault();
+                return;
             }
+            // Otherwise allow native form submit so browser follows redirect
         });
     }
 
@@ -217,7 +218,14 @@
                 body: formData
             });
 
+            // If server sent a redirect (e.g., to BookingConfirmation with TempData), follow it
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
             if (response.ok) {
+                // Fallback: reload current page
                 window.location.reload();
             } else {
                 throw new Error('Payment failed');
@@ -251,6 +259,8 @@
 
     // Card validation functions
     isValidCardNumber(cardNumber) {
+        // Allow known test-decline card to bypass Luhn so server can handle failure
+        if (cardNumber === '4000000000000002') return true;
         // Basic Luhn algorithm check
         if (cardNumber.length < 13 || cardNumber.length > 19) return false;
 
