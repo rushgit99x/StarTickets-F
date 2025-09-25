@@ -4,18 +4,19 @@ using StarTickets.Data;
 using StarTickets.Filters;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
+using StarTickets.Services.Interfaces;
 
 namespace StarTickets.Controllers
 {
     [RoleAuthorize("1")] // Admin only
     public class BookingManagementController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IBookingManagementService _service;
         private readonly ILogger<BookingManagementController> _logger;
 
-        public BookingManagementController(ApplicationDbContext context, ILogger<BookingManagementController> logger)
+        public BookingManagementController(IBookingManagementService service, ILogger<BookingManagementController> logger)
         {
-            _context = context;
+            _service = service;
             _logger = logger;
         }
 
@@ -25,52 +26,8 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            var query = _context.Bookings
-                .Include(b => b.Event)!
-                    .ThenInclude(e => e!.Venue)
-                .Include(b => b.Customer)
-                .Include(b => b.BookingDetails)!
-                    .ThenInclude(d => d.TicketCategory)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(b =>
-                    b.BookingReference.Contains(search) ||
-                    (b.Customer != null && (b.Customer.FirstName + " " + b.Customer.LastName).Contains(search)) ||
-                    (b.Event != null && b.Event.EventName.Contains(search)));
-            }
-
-            if (paymentStatus.HasValue)
-            {
-                query = query.Where(b => b.PaymentStatus == paymentStatus.Value);
-            }
-
-            if (bookingStatus.HasValue)
-            {
-                query = query.Where(b => b.Status == bookingStatus.Value);
-            }
-
-            var total = await query.CountAsync();
-            var bookings = await query
-                .OrderByDescending(b => b.BookingDate)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var viewModel = new AdminBookingListViewModel
-            {
-                Bookings = bookings,
-                Search = search,
-                PaymentStatusFilter = paymentStatus,
-                BookingStatusFilter = bookingStatus,
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalBookings = total,
-                TotalPages = (int)Math.Ceiling(total / (double)pageSize)
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetIndexAsync(search, paymentStatus, bookingStatus, page, pageSize);
+            return View(vm);
         }
 
         // GET: BookingManagement/Details/5
@@ -79,33 +36,8 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            var booking = await _context.Bookings
-                .Include(b => b.Event)!
-                    .ThenInclude(e => e!.Venue)
-                .Include(b => b.Event)!
-                    .ThenInclude(e => e!.Category)
-                .Include(b => b.Customer)
-                .Include(b => b.BookingDetails)!
-                    .ThenInclude(d => d.TicketCategory)
-                .Include(b => b.BookingDetails)!
-                    .ThenInclude(d => d.Tickets)
-                .FirstOrDefaultAsync(b => b.BookingId == id);
-
-            if (booking == null)
-            {
-                return NotFound();
-            }
-
-            var vm = new BookingDetailsViewModel
-            {
-                Booking = booking,
-                Event = booking.Event!,
-                Venue = booking.Event!.Venue!,
-                BookingDetails = booking.BookingDetails?.ToList() ?? new List<BookingDetail>(),
-                Tickets = booking.BookingDetails?.SelectMany(d => d.Tickets ?? new List<Ticket>()).ToList() ?? new List<Ticket>(),
-                CanCancel = booking.Status == Models.BookingStatus.Active && booking.PaymentStatus != PaymentStatus.Refunded
-            };
-
+            var vm = await _service.GetDetailsAsync(id);
+            if (vm == null) return NotFound();
             return View(vm);
         }
 
@@ -117,50 +49,9 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            try
-            {
-                var booking = await _context.Bookings
-                    .Include(b => b.BookingDetails)!
-                        .ThenInclude(d => d.TicketCategory)
-                    .FirstOrDefaultAsync(b => b.BookingId == id);
-
-                if (booking == null)
-                {
-                    TempData["ErrorMessage"] = "Booking not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                if (booking.Status == Models.BookingStatus.Cancelled)
-                {
-                    TempData["InfoMessage"] = "Booking already cancelled.";
-                    return RedirectToAction("Details", new { id });
-                }
-
-                booking.Status = Models.BookingStatus.Cancelled;
-                booking.UpdatedAt = DateTime.UtcNow;
-
-                // Optionally restock tickets if payment was completed
-                if (booking.PaymentStatus == PaymentStatus.Completed && booking.BookingDetails != null)
-                {
-                    foreach (var detail in booking.BookingDetails)
-                    {
-                        if (detail.TicketCategory != null)
-                        {
-                            detail.TicketCategory.AvailableQuantity += detail.Quantity;
-                        }
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Booking has been cancelled.";
-                return RedirectToAction("Details", new { id });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to cancel booking {BookingId}", id);
-                TempData["ErrorMessage"] = "Failed to cancel booking.";
-                return RedirectToAction("Details", new { id });
-            }
+            var result = await _service.CancelAsync(id, reason);
+            if (result.Success) { TempData["SuccessMessage"] = result.Message; return RedirectToAction("Details", new { id }); }
+            TempData["ErrorMessage"] = result.Message; return RedirectToAction("Details", new { id });
         }
 
         // POST: BookingManagement/Delete/5
@@ -171,46 +62,9 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            try
-            {
-                var booking = await _context.Bookings
-                    .Include(b => b.BookingDetails)!
-                        .ThenInclude(d => d.Tickets)
-                    .FirstOrDefaultAsync(b => b.BookingId == id);
-
-                if (booking == null)
-                {
-                    TempData["ErrorMessage"] = "Booking not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Remove tickets
-                if (booking.BookingDetails != null)
-                {
-                    foreach (var detail in booking.BookingDetails)
-                    {
-                        if (detail.Tickets != null && detail.Tickets.Any())
-                        {
-                            _context.Tickets.RemoveRange(detail.Tickets);
-                        }
-                    }
-
-                    // Remove details
-                    _context.BookingDetails.RemoveRange(booking.BookingDetails);
-                }
-
-                _context.Bookings.Remove(booking);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Booking has been deleted.";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete booking {BookingId}", id);
-                TempData["ErrorMessage"] = "Failed to delete booking.";
-                return RedirectToAction("Details", new { id });
-            }
+            var result = await _service.DeleteAsync(id);
+            if (result.Success) { TempData["SuccessMessage"] = result.Message; return RedirectToAction(nameof(Index)); }
+            TempData["ErrorMessage"] = result.Message; return RedirectToAction("Details", new { id });
         }
     }
 }

@@ -5,6 +5,7 @@ using StarTickets.Filters;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
 using StarTickets.Services;
+using StarTickets.Services.Interfaces;
 using System.Security.Cryptography;
 
 namespace StarTickets.Controllers
@@ -15,15 +16,18 @@ namespace StarTickets.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserManagementController> _logger;
         private readonly IEmailService _emailService;
+        private readonly IUserManagementService _service;
 
         public UserManagementController(
             ApplicationDbContext context,
             ILogger<UserManagementController> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            IUserManagementService service)
         {
             _context = context;
             _logger = logger;
             _emailService = emailService;
+            _service = service;
         }
 
         // GET: UserManagement/Index

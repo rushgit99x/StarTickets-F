@@ -4,18 +4,19 @@ using StarTickets.Data;
 using StarTickets.Filters;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
+using StarTickets.Services.Interfaces;
 
 namespace StarTickets.Controllers
 {
     [RoleAuthorize("1")] // Admin only
     public class CategoryManagementController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoryManagementService _service;
         private readonly ILogger<CategoryManagementController> _logger;
 
-        public CategoryManagementController(ApplicationDbContext context, ILogger<CategoryManagementController> logger)
+        public CategoryManagementController(ICategoryManagementService service, ILogger<CategoryManagementController> logger)
         {
-            _context = context;
+            _service = service;
             _logger = logger;
         }
 
@@ -25,34 +26,7 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            var query = _context.EventCategories
-                .Include(c => c.Events)
-                .AsQueryable();
-
-            // Apply search filter
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(c => c.CategoryName.Contains(searchTerm) ||
-                                        c.Description!.Contains(searchTerm));
-            }
-
-            var totalCategories = await query.CountAsync();
-            var categories = await query
-                .OrderBy(c => c.CategoryName)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var viewModel = new CategoryManagementViewModel
-            {
-                Categories = categories,
-                SearchTerm = searchTerm,
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalCategories = totalCategories,
-                TotalPages = (int)Math.Ceiling((double)totalCategories / pageSize)
-            };
-
+            var viewModel = await _service.GetIndexAsync(searchTerm, page, pageSize);
             return View(viewModel);
         }
 
@@ -69,58 +43,23 @@ namespace StarTickets.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                var ok = await _service.CreateAsync(model);
+                if (ok)
                 {
-                    // Check if category name already exists
-                    var existingCategory = await _context.EventCategories
-                        .FirstOrDefaultAsync(c => c.CategoryName.ToLower() == model.CategoryName.ToLower());
-
-                    if (existingCategory != null)
-                    {
-                        ModelState.AddModelError("CategoryName", "A category with this name already exists.");
-                        return View(model);
-                    }
-
-                    var category = new EventCategory
-                    {
-                        CategoryName = model.CategoryName,
-                        Description = model.Description,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    _context.EventCategories.Add(category);
-                    await _context.SaveChangesAsync();
-
                     TempData["SuccessMessage"] = "Category created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error creating category");
-                    ModelState.AddModelError("", "An error occurred while creating the category. Please try again.");
-                }
+                ModelState.AddModelError("CategoryName", "A category with this name already exists.");
             }
-
             return View(model);
         }
 
         // GET: CategoryManagement/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _context.EventCategories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new EditCategoryViewModel
-            {
-                CategoryId = category.CategoryId,
-                CategoryName = category.CategoryName,
-                Description = category.Description
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetEditAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // POST: CategoryManagement/Edit/5
@@ -130,116 +69,37 @@ namespace StarTickets.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                var ok = await _service.EditAsync(model);
+                if (ok)
                 {
-                    var category = await _context.EventCategories.FindAsync(model.CategoryId);
-                    if (category == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Check if category name already exists (excluding current category)
-                    var existingCategory = await _context.EventCategories
-                        .FirstOrDefaultAsync(c => c.CategoryName.ToLower() == model.CategoryName.ToLower() &&
-                                                 c.CategoryId != model.CategoryId);
-
-                    if (existingCategory != null)
-                    {
-                        ModelState.AddModelError("CategoryName", "A category with this name already exists.");
-                        return View(model);
-                    }
-
-                    category.CategoryName = model.CategoryName;
-                    category.Description = model.Description;
-
-                    await _context.SaveChangesAsync();
-
                     TempData["SuccessMessage"] = "Category updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error updating category");
-                    ModelState.AddModelError("", "An error occurred while updating the category. Please try again.");
-                }
+                ModelState.AddModelError("CategoryName", "A category with this name already exists.");
             }
-
             return View(model);
         }
 
         // GET: CategoryManagement/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var category = await _context.EventCategories
-                .Include(c => c.Events!.Where(e => e.IsActive))
-                .ThenInclude(e => e.Venue)
-                .FirstOrDefaultAsync(c => c.CategoryId == id);
-
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            var totalEvents = category.Events?.Count ?? 0;
-            var activeEvents = category.Events?.Count(e => e.Status == EventStatus.Published) ?? 0;
-            var upcomingEvents = category.Events?.Count(e => e.EventDate > DateTime.UtcNow) ?? 0;
-
-            var viewModel = new CategoryDetailsViewModel
-            {
-                Category = category,
-                TotalEvents = totalEvents,
-                ActiveEvents = activeEvents,
-                UpcomingEvents = upcomingEvents,
-                RecentEvents = category.Events?.OrderByDescending(e => e.CreatedAt).Take(10).ToList() ?? new List<Event>()
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetDetailsAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         [HttpPost]
         [Route("CategoryManagement/Delete/{id:int}")]
         public async Task<IActionResult> DeleteAjax(int id)
         {
-            try
-            {
-                var category = await _context.EventCategories
-                    .Include(c => c.Events)
-                    .FirstOrDefaultAsync(c => c.CategoryId == id);
-
-                if (category == null)
-                {
-                    return Json(new { success = false, message = "Category not found." });
-                }
-
-                // Check if category has events
-                if (category.Events?.Any() == true)
-                {
-                    return Json(new { success = false, message = "Cannot delete category with existing events. Please move or delete the events first." });
-                }
-
-                _context.EventCategories.Remove(category);
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, message = "Category deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting category");
-                return Json(new { success = false, message = "An error occurred while deleting the category." });
-            }
+            var result = await _service.DeleteAjaxAsync(id);
+            return Json(new { success = result.Success, message = result.Message });
         }
         // GET: CategoryManagement/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var category = await _context.EventCategories
-                .Include(c => c.Events)
-                .FirstOrDefaultAsync(c => c.CategoryId == id);
-
-            if (category == null)
-            {
-                return NotFound();
-            }
-
+            var category = await _service.GetCategoryForDeleteAsync(id);
+            if (category == null) return NotFound();
             return View(category);
         }
 
@@ -248,37 +108,14 @@ namespace StarTickets.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
+            var result = await _service.DeleteAsync(id);
+            if (result.Success)
             {
-                var category = await _context.EventCategories
-                    .Include(c => c.Events)
-                    .FirstOrDefaultAsync(c => c.CategoryId == id);
-
-                if (category == null)
-                {
-                    TempData["ErrorMessage"] = "Category not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Check if category has events
-                if (category.Events?.Any() == true)
-                {
-                    TempData["ErrorMessage"] = "Cannot delete category with existing events. Please move or delete the events first.";
-                    return RedirectToAction(nameof(Delete), new { id = id });
-                }
-
-                _context.EventCategories.Remove(category);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Category deleted successfully!";
+                TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting category");
-                TempData["ErrorMessage"] = "An error occurred while deleting the category. Please try again.";
-                return RedirectToAction(nameof(Delete), new { id = id });
-            }
+            TempData["ErrorMessage"] = result.Message;
+            return RedirectToAction(nameof(Delete), new { id = id });
         }
     }
 }

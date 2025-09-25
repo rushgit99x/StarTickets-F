@@ -7,6 +7,7 @@ using StarTickets.Filters;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using StarTickets.Services.Interfaces;
 
 namespace StarTickets.Controllers
 {
@@ -16,12 +17,14 @@ namespace StarTickets.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<EventOrganizerController> _logger;
         private readonly StarTickets.Services.IPdfReportService _pdfReportService;
+        private readonly IEventOrganizerService _service;
 
-        public EventOrganizerController(ApplicationDbContext context, ILogger<EventOrganizerController> logger, StarTickets.Services.IPdfReportService pdfReportService)
+        public EventOrganizerController(ApplicationDbContext context, ILogger<EventOrganizerController> logger, StarTickets.Services.IPdfReportService pdfReportService, IEventOrganizerService service)
         {
             _context = context;
             _logger = logger;
             _pdfReportService = pdfReportService;
+            _service = service;
         }
 
         // GET: EventOrganizer Dashboard
@@ -30,38 +33,13 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            // Load current organizer's basic info for header display
+            var dashboardData = await _service.GetDashboardAsync(userId.Value);
             var currentUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
             if (currentUser != null)
             {
-                ViewBag.UserName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+                ViewBag.UserName = ($"{currentUser.FirstName} {currentUser.LastName}").Trim();
                 ViewBag.UserEmail = currentUser.Email;
             }
-
-            // Get organizer's events for dashboard stats
-            var organizerEvents = await _context.Events
-                .Where(e => e.OrganizerId == userId)
-                .Include(e => e.TicketCategories)
-                .Include(e => e.Bookings)
-                    .ThenInclude(b => b.BookingDetails)
-                .ToListAsync();
-
-            var dashboardData = new EventOrganizerDashboardViewModel
-            {
-                TotalEvents = organizerEvents.Count,
-                ActiveEvents = organizerEvents.Count(e => e.Status == EventStatus.Published && e.IsActive),
-                TotalTicketsSold = organizerEvents
-                    .SelectMany(e => e.Bookings?.Where(b => b.PaymentStatus == PaymentStatus.Completed) ?? new List<Booking>())
-                    .SelectMany(b => b.BookingDetails ?? new List<BookingDetail>())
-                    .Sum(bd => bd.Quantity),
-                TotalRevenue = organizerEvents
-                    .SelectMany(e => e.Bookings?.Where(b => b.PaymentStatus == PaymentStatus.Completed) ?? new List<Booking>())
-                    .Sum(b => b.FinalAmount),
-                RecentEvents = organizerEvents
-                    .OrderByDescending(e => e.CreatedAt)
-                    .Take(5)
-                    .ToList()
-            };
 
             return View(dashboardData);
         }

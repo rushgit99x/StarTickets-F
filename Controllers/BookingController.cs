@@ -8,6 +8,7 @@ using StarTickets.Filters;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
 using StarTickets.Services;
+using StarTickets.Services.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing; // System.Drawing.Common NuGet package
 using System.Drawing.Imaging; // System.Drawing.Common NuGet package
@@ -20,12 +21,14 @@ namespace StarTickets.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<BookingController> _logger;
         private readonly IEmailService _emailService;
+        private readonly IBookingService _bookingService;
 
-        public BookingController(ApplicationDbContext context, ILogger<BookingController> logger, IEmailService emailService)
+        public BookingController(ApplicationDbContext context, ILogger<BookingController> logger, IEmailService emailService, IBookingService bookingService)
         {
             _context = context;
             _logger = logger;
             _emailService = emailService;
+            _bookingService = bookingService;
         }
 
         // GET: Booking/BookTicket/5
@@ -34,39 +37,17 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            var eventEntity = await _context.Events
-                .Include(e => e.Category)
-                .Include(e => e.Venue)
-                .Include(e => e.TicketCategories.Where(tc => tc.IsActive))
-                .FirstOrDefaultAsync(e => e.EventId == eventId && e.IsActive &&
-                                          e.Status == EventStatus.Published);
-
-            if (eventEntity == null)
+            var viewModel = await _bookingService.PrepareBookingAsync(eventId, userId.Value);
+            if (viewModel == null)
             {
                 TempData["ErrorMessage"] = "Event not found or not available for booking.";
                 return RedirectToAction("Index", "Home");
             }
-
-            // Check if event is in the future
-            if (eventEntity.EventDate <= DateTime.UtcNow)
+            if (viewModel.Event.EventDate <= DateTime.UtcNow)
             {
                 TempData["ErrorMessage"] = "This event has already occurred.";
                 return RedirectToAction("Index", "Home");
             }
-
-            // Get user information
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId.Value);
-
-            var viewModel = new BookTicketViewModel
-            {
-                Event = eventEntity,
-                TicketCategories = eventEntity.TicketCategories?.ToList() ?? new List<TicketCategory>(),
-                CustomerEmail = user?.Email,
-                CustomerFirstName = user?.FirstName,
-                CustomerLastName = user?.LastName,
-                CustomerPhone = user?.PhoneNumber
-            };
-
             return View(viewModel);
         }
 
@@ -139,159 +120,15 @@ namespace StarTickets.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Auth");
 
-            try
+            var result = await _bookingService.ProcessBookingAsync(model, userId.Value);
+            if (!result.Success)
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-
-                // Validate event and ticket availability
-                var eventEntity = await _context.Events
-                    .Include(e => e.TicketCategories)
-                    .FirstOrDefaultAsync(e => e.EventId == model.EventId && e.IsActive);
-
-                if (eventEntity == null)
-                {
-                    ModelState.AddModelError("", "Event not found.");
-                    await ReloadBookingViewModel(model);
-                    return View("BookTicket", model);
-                }
-
-                decimal totalAmount = 0;
-                var bookingDetails = new List<BookingDetail>();
-
-                // Process each ticket category
-                foreach (var selectedCategory in model.SelectedCategories.Where(sc => sc.Quantity > 0))
-                {
-                    var ticketCategory = eventEntity.TicketCategories?
-                        .FirstOrDefault(tc => tc.TicketCategoryId == selectedCategory.TicketCategoryId);
-
-                    if (ticketCategory == null)
-                    {
-                        ModelState.AddModelError("", $"Ticket category not found.");
-                        await ReloadBookingViewModel(model);
-                        return View("BookTicket", model);
-                    }
-
-                    // Check availability
-                    if (ticketCategory.AvailableQuantity < selectedCategory.Quantity)
-                    {
-                        ModelState.AddModelError("",
-                            $"Only {ticketCategory.AvailableQuantity} tickets available for {ticketCategory.CategoryName}.");
-                        await ReloadBookingViewModel(model);
-                        return View("BookTicket", model);
-                    }
-
-                    // Create booking detail
-                    var bookingDetail = new BookingDetail
-                    {
-                        TicketCategoryId = selectedCategory.TicketCategoryId,
-                        Quantity = selectedCategory.Quantity,
-                        UnitPrice = ticketCategory.Price,
-                        TotalPrice = ticketCategory.Price * selectedCategory.Quantity
-                    };
-
-                    bookingDetails.Add(bookingDetail);
-                    totalAmount += bookingDetail.TotalPrice;
-
-                    // TEMPORARILY reserve tickets (don't deduct yet)
-                    // We'll deduct after successful payment
-                }
-
-                if (bookingDetails.Count == 0)
-                {
-                    ModelState.AddModelError("", "Please select at least one ticket.");
-                    await ReloadBookingViewModel(model);
-                    return View("BookTicket", model);
-                }
-
-                // Apply discount if promo code is provided
-                decimal discountAmount = 0;
-                int? promoId = null;
-                if (!string.IsNullOrWhiteSpace(model.PromoCode))
-                {
-                    var promo = await _context.PromotionalCampaigns
-                        .FirstOrDefaultAsync(p => p.DiscountCode == model.PromoCode &&
-                                                 p.IsActive &&
-                                                 DateTime.UtcNow >= p.StartDate &&
-                                                 DateTime.UtcNow <= p.EndDate &&
-                                                 (p.MaxUsage == null || p.CurrentUsage < p.MaxUsage));
-
-                    if (promo != null)
-                    {
-                        if ((int)promo.DiscountType == (int)DiscountType.Percentage)
-                        {
-                            discountAmount = totalAmount * (promo.DiscountValue / 100);
-                        }
-                        else
-                        {
-                            discountAmount = Math.Min(promo.DiscountValue, totalAmount);
-                        }
-                        promoId = promo.PromotionalCampaignId;
-                        // Don't update usage yet - wait for payment confirmation
-                    }
-                }
-
-                decimal finalAmount = totalAmount - discountAmount;
-
-                // Create booking with PENDING payment status
-                var booking = new Booking
-                {
-                    BookingReference = GenerateBookingReference(),
-                    CustomerId = userId.Value,
-                    EventId = model.EventId,
-                    BookingDate = DateTime.UtcNow,
-                    TotalAmount = totalAmount,
-                    DiscountAmount = discountAmount,
-                    FinalAmount = finalAmount,
-                    PaymentStatus = PaymentStatus.Pending,
-                    PromoCodeUsed = model.PromoCode,
-                    Status = (Models.BookingStatus)BookingStatus.Active,
-                    BookingDetails = bookingDetails,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
-
-                // Store promo ID in session for later use during payment
-                if (promoId.HasValue)
-                {
-                    HttpContext.Session.SetInt32("PromoId", promoId.Value);
-                }
-
-                // Generate placeholder tickets (will be activated after payment)
-                foreach (var bookingDetail in bookingDetails)
-                {
-                    bookingDetail.BookingId = booking.BookingId;
-
-                    for (int i = 0; i < bookingDetail.Quantity; i++)
-                    {
-                        var ticket = new Ticket
-                        {
-                            BookingDetailId = bookingDetail.BookingDetailId,
-                            TicketNumber = GenerateTicketNumber(booking.BookingId, bookingDetail.BookingDetailId, i + 1),
-                            QRCode = GenerateQRCode(booking.BookingReference, i + 1),
-                            IsUsed = false,
-                            CreatedAt = DateTime.UtcNow
-                        };
-
-                        _context.Tickets.Add(ticket);
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                TempData["SuccessMessage"] = $"Booking created successfully! Complete your payment to confirm your tickets.";
-                return RedirectToAction("BookingConfirmation", new { bookingId = booking.BookingId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing booking");
-                ModelState.AddModelError("", "An error occurred while processing your booking. Please try again.");
+                ModelState.AddModelError("", result.Error);
                 await ReloadBookingViewModel(model);
                 return View("BookTicket", model);
             }
+            TempData["SuccessMessage"] = $"Booking created successfully! Complete your payment to confirm your tickets.";
+            return RedirectToAction("BookingConfirmation", new { bookingId = result.BookingId!.Value });
         }
 
         // GET: Booking/BookingConfirmation/5 - Now handles payment processing
