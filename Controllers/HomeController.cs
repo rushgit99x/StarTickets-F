@@ -61,7 +61,6 @@ namespace StarTickets.Controllers
             var viewModel = await _homeService.BuildHomeAsync(userId);
             return View(viewModel);
         }
-
         [HttpGet]
         public async Task<IActionResult> SearchEvents(string query, int? categoryId, string location, DateTime? date)
         {
@@ -149,20 +148,5 @@ namespace StarTickets.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-    }
-}
-
-// View Models
-namespace StarTickets.Models.ViewModels
-{
-    public class HomeViewModel
-    {
-        public List<Event> FeaturedEvents { get; set; } = new List<Event>();
-        public List<Event> ThisWeekEvents { get; set; } = new List<Event>();
-        public List<Event> ThisMonthEvents { get; set; } = new List<Event>();
-        public List<Event> NextMonthEvents { get; set; } = new List<Event>();
-        public List<EventCategory> Categories { get; set; } = new List<EventCategory>();
-        public List<Venue> Venues { get; set; } = new List<Venue>();
-        public bool IsAuthenticated { get; set; }
     }
 }

@@ -78,7 +78,6 @@ namespace StarTickets.Services
 
                 if (bookingDetails.Count == 0)
                 {
-                    return (false, "Please select at least one ticket.", null);
                 }
 
                 decimal discountAmount = 0;
@@ -98,12 +97,14 @@ namespace StarTickets.Services
                         }
                         promoId = promo.PromotionalCampaignId;
                     }
+                    else
+                    {
+                        _logger.LogError("Promo code {PromoCode} is invalid or expired.", model.PromoCode);
+                    }
                 }
-
                 decimal finalAmount = totalAmount - discountAmount;
-
-                var booking = new Booking
-                {
+                
+                var booking = new Booking {
                     BookingReference = GenerateBookingReference(),
                     CustomerId = userId,
                     EventId = model.EventId,
@@ -113,7 +114,7 @@ namespace StarTickets.Services
                     FinalAmount = finalAmount,
                     PaymentStatus = PaymentStatus.Pending,
                     PromoCodeUsed = model.PromoCode,
-                    Status = (Models.BookingStatus)BookingStatus.Active,
+                    Status = BookingStatus.Active,
                     BookingDetails = bookingDetails,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow

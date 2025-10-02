@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRCoder; // QRCoder NuGet package
 using QuestPDF.Fluent;
@@ -486,8 +486,6 @@ namespace StarTickets.Controllers
             var fileName = $"{ticket.TicketNumber}.pdf";
             return File(pdfBytes, "application/pdf", fileName);
         }
-
-        // Keeping the original method for backward compatibility
         [HttpGet]
         public async Task<IActionResult> GetTicketData(int bookingId)
         {
@@ -495,44 +493,4 @@ namespace StarTickets.Controllers
         }
     }
 
-    // Enums for booking
-    public enum BookingStatus
-    {
-        Active,
-        Cancelled
-    }
-
-    public enum DiscountType
-    {
-        Percentage,
-        Fixed
-    }
-
-    // Payment ViewModel
-    public class PaymentViewModel
-    {
-        public int BookingId { get; set; }
-        public decimal Amount { get; set; }
-
-        [Required]
-        public string CardNumber { get; set; }
-
-        [Required]
-        public string ExpiryDate { get; set; }
-
-        [Required]
-        public string CVV { get; set; }
-
-        [Required]
-        public string CardName { get; set; }
-
-        [Required]
-        public string BillingAddress { get; set; }
-
-        [Required]
-        public string City { get; set; }
-
-        [Required]
-        public string ZipCode { get; set; }
-    }
 }
