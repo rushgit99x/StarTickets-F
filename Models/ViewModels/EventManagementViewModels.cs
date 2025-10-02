@@ -72,6 +72,7 @@ namespace StarTickets.Models.ViewModels
 
         // Ticket Categories
         public List<TicketCategoryViewModel> TicketCategories { get; set; } = new List<TicketCategoryViewModel>();
+        public string? Title { get; internal set; }
     }
 
     // Edit Event View Model
@@ -285,6 +286,7 @@ namespace StarTickets.Models.ViewModels
 
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
+        public string? Name { get; internal set; }
     }
 
     public class EditVenueViewModel

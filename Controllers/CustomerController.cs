@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using StarTickets.Filters;
 using StarTickets.Services;
+using StarTickets.Services.Interfaces;
 using StarTickets.Models.ViewModels;
 using System.IO.Compression;
 

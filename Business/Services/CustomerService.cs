@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using StarTickets.Data;
 using StarTickets.Models;
 using StarTickets.Models.ViewModels;
@@ -7,6 +7,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Net.Mail;
 using System.Net;
+using StarTickets.Services.Interfaces;
 
 namespace StarTickets.Services
 {
@@ -181,36 +182,32 @@ namespace StarTickets.Services
 
         public async Task<bool> RateEventAsync(int customerId, RateEventViewModel model)
         {
-            // Check if customer has booking for this event
             var hasBooking = await _context.Bookings
                 .AnyAsync(b => b.CustomerId == customerId &&
                               b.EventId == model.EventId &&
-                              (int)b.Status == 0 && // Active status
+                              (int)b.Status == 0 &&
                               b.Event!.EventDate < DateTime.Now);
 
             if (!hasBooking)
                 return false;
 
-            // Check if already rated
             var existingRating = await _context.EventRatings
                 .FirstOrDefaultAsync(er => er.EventId == model.EventId && er.CustomerId == customerId);
 
             if (existingRating != null)
             {
-                // Update existing rating
                 existingRating.Rating = model.Rating;
                 existingRating.Review = model.Review;
             }
             else
             {
-                // Create new rating
                 var rating = new EventRating
                 {
                     EventId = model.EventId,
                     CustomerId = customerId,
                     Rating = model.Rating,
                     Review = model.Review,
-                    IsApproved = false, // Admin approval required
+                    IsApproved = false,
                     CreatedAt = DateTime.Now
                 };
 
@@ -253,7 +250,7 @@ namespace StarTickets.Services
                 .Include(b => b.Customer)
                 .FirstOrDefaultAsync(b => b.BookingReference == bookingReference &&
                                          b.CustomerId == customerId &&
-                                         (int)b.Status == 0); // Active status
+                                         (int)b.Status == 0);
 
             if (booking == null)
                 return null;
@@ -278,7 +275,6 @@ namespace StarTickets.Services
                         {
                             column.Spacing(20);
 
-                            // Booking Reference
                             column.Item().Row(row =>
                             {
                                 row.RelativeItem().Column(col =>
@@ -290,7 +286,6 @@ namespace StarTickets.Services
                                 });
                             });
 
-                            // Event Details Section
                             column.Item().Element(container =>
                             {
                                 container
@@ -321,7 +316,6 @@ namespace StarTickets.Services
                                     });
                             });
 
-                            // Customer Details Section
                             column.Item().Element(container =>
                             {
                                 container
@@ -348,7 +342,6 @@ namespace StarTickets.Services
                                     });
                             });
 
-                            // Ticket Details Section
                             if (booking.BookingDetails != null && booking.BookingDetails.Any())
                             {
                                 column.Item().Element(container =>
@@ -383,7 +376,6 @@ namespace StarTickets.Services
                                 });
                             }
 
-                            // Payment Information
                             column.Item().Element(container =>
                             {
                                 container
@@ -400,7 +392,6 @@ namespace StarTickets.Services
                                     });
                             });
 
-                            // QR Code or Barcode placeholder (you can add actual QR code generation later)
                             column.Item().AlignCenter().Element(container =>
                             {
                                 container
@@ -476,7 +467,7 @@ namespace StarTickets.Services
         public async Task<List<byte[]>> GetAllCustomerTicketsAsync(int customerId)
         {
             var bookings = await _context.Bookings
-                .Where(b => b.CustomerId == customerId && (int)b.Status == 0) // Active status
+                .Where(b => b.CustomerId == customerId && (int)b.Status == 0)
                 .ToListAsync();
 
             var tickets = new List<byte[]>();
@@ -525,26 +516,21 @@ namespace StarTickets.Services
 
             try
             {
-                // Find the booking by reference and ensure it belongs to the user
                 var booking = await _context.Bookings
                     .FirstOrDefaultAsync(b => b.BookingReference == bookingReference && b.CustomerId == userId);
 
                 if (booking == null)
                 {
-                    return false; // Booking not found or doesn't belong to the user
+                    return false;
                 }
 
-                // Remove the booking
                 _context.Bookings.Remove(booking);
-
-                // Save changes to the database
                 await _context.SaveChangesAsync();
 
                 return true;
             }
             catch (Exception)
             {
-                // Log the exception if logging is configured (not implemented here)
                 return false;
             }
         }
@@ -572,7 +558,6 @@ namespace StarTickets.Services
                 {
                     foreach (var ticket in detail.Tickets)
                     {
-                        // Generate QR code as base64 data URL
                         string qrCodeDataUrl = GenerateQRCodeDataUrl(ticket.QRCode);
 
                         ticketData.Add(new
@@ -667,7 +652,6 @@ namespace StarTickets.Services
 
                 if (ticket == null) return false;
 
-                // Use EmailService to send a single ticket email with PDF attached
                 await _context.Entry(ticket.BookingDetail).Reference(bd => bd.Booking).LoadAsync();
                 await _context.Entry(ticket.BookingDetail.Booking).Reference(b => b.Event).LoadAsync();
                 await _context.Entry(ticket.BookingDetail.Booking).Reference(b => b.Customer).LoadAsync();
@@ -702,19 +686,15 @@ namespace StarTickets.Services
         {
             try
             {
-                // Check if customer has booking for this event
                 var hasBooking = await _context.Bookings
                     .AnyAsync(b => b.CustomerId == customerId &&
                                   b.EventId == eventId &&
-                                  (int)b.Status == 0 && // Active status
+                                  (int)b.Status == 0 &&
                                   b.Event!.EventDate > DateTime.Now);
 
                 if (!hasBooking)
                     return false;
 
-                // For now, we'll just return true as the reminder is handled client-side
-                // In a production system, you might want to store reminders in the database
-                // and have a background service send emails at the reminder time
                 return true;
             }
             catch (Exception)
@@ -731,9 +711,9 @@ namespace StarTickets.Services
                 .Include(b => b.Event)
                     .ThenInclude(e => e!.Category)
                 .Include(b => b.Customer)
-                .Where(b => (int)b.Status == 0 && // Active status
+                .Where(b => (int)b.Status == 0 &&
                            b.Event!.EventDate > DateTime.Now &&
-                           b.Event.EventDate <= DateTime.Now.AddDays(1)) // Events in the next 24 hours
+                           b.Event.EventDate <= DateTime.Now.AddDays(1))
                 .OrderBy(b => b.Event!.EventDate)
                 .ToListAsync();
 
@@ -754,6 +734,5 @@ namespace StarTickets.Services
                 BookingReference = b.BookingReference
             }).ToList();
         }
-
     }
 }

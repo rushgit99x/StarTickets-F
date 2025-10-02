@@ -1,7 +1,7 @@
-﻿using StarTickets.Models;
+using StarTickets.Models;
 using StarTickets.Models.ViewModels;
 
-namespace StarTickets.Services
+namespace StarTickets.Services.Interfaces
 {
     public interface ICustomerService
     {

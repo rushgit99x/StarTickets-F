@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +35,7 @@ builder.Services.AddScoped<IBookingManagementRepository, BookingManagementReposi
 builder.Services.AddScoped<IDashboardStatsRepository, DashboardStatsRepository>();
 builder.Services.AddScoped<IEventOrganizerRepository, EventOrganizerRepository>();
 builder.Services.AddScoped<IReviewsManagementRepository, ReviewsManagementRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
