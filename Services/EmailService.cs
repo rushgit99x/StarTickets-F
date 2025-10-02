@@ -58,7 +58,6 @@ namespace StarTickets.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to send ticket confirmation email for booking {booking.BookingReference}");
-                // Don't throw - we don't want payment to fail if email fails
             }
         }
 
@@ -423,8 +422,6 @@ namespace StarTickets.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to send email to {to}");
-                // Don't throw exception to prevent registration failure
-                // You might want to implement retry logic or queue failed emails
             }
         }
 

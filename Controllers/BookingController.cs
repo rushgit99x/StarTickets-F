@@ -15,7 +15,6 @@ using System.Drawing.Imaging; // System.Drawing.Common NuGet package
 
 namespace StarTickets.Controllers
 {
-    //[RoleAuthorize("3")] // Customer only
     public class BookingController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -549,23 +548,6 @@ namespace StarTickets.Controllers
                 // Set empty collections to prevent null reference errors
                 model.TicketCategories = new List<TicketCategory>();
             }
-        }
-
-        // Generates a unique booking reference
-        private string GenerateBookingReference()
-        {
-            return "BK" + DateTime.UtcNow.ToString("yyyyMMddHHmmss") +
-                   new Random().Next(1000, 9999).ToString();
-        }
-        // Generates a unique ticket number
-        private string GenerateTicketNumber(int bookingId, int bookingDetailId, int ticketSequence)
-        {
-            return $"TK{bookingId:D6}{bookingDetailId:D3}{ticketSequence:D2}";
-        }
-        // Generates QR code data
-        private string GenerateQRCode(string bookingReference, int ticketSequence)
-        {
-            return $"{bookingReference}-{ticketSequence:D2}";
         }
 
         // Generates a unique transaction ID
